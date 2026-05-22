@@ -1,0 +1,42 @@
+.panel {
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.header,
+.total {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.header p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.total {
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  font-size: 1.2rem;
+}
+
+.product-cell {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.product-cell img {
+  width: 56px;
+  height: 42px;
+  border-radius: 6px;
+  object-fit: cover;
+}

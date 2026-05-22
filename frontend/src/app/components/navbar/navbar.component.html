@@ -1,0 +1,92 @@
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/">
+      <span class="brand-mark">
+        <img *ngIf="configuracion?.logo_url" [src]="configuracion?.logo_url" [alt]="nombreEmpresa">
+        <span *ngIf="!configuracion?.logo_url">{{ iniciales }}</span>
+      </span>
+      <span class="fw-bold">{{ nombreEmpresa }}</span>
+    </a>
+    
+    <button 
+      class="navbar-toggler" 
+      type="button" 
+      data-bs-toggle="collapse" 
+      data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" 
+      aria-expanded="false" 
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <!-- Navegación Pública -->
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/productos" routerLinkActive="active">
+            Productos
+          </a>
+        </li>
+
+        <!-- Navegación Autenticada -->
+        <ng-container *ngIf="isLoggedIn">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/carrito" routerLinkActive="active">
+              Carrito
+              <span class="badge bg-danger" *ngIf="cantidadCarrito > 0">
+                {{ cantidadCarrito }}
+              </span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/seguimiento" routerLinkActive="active">
+              Mis Pedidos
+            </a>
+          </li>
+
+          <!-- Dashboard Admin -->
+          <li class="nav-item" *ngIf="isAdmin">
+            <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+              Administracion
+            </a>
+          </li>
+
+          <!-- Usuario y Logout -->
+          <li class="nav-item dropdown">
+            <a 
+              class="nav-link dropdown-toggle" 
+              href="#" 
+              id="navbarDropdown" 
+              role="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+              <i class="bi bi-person-circle"></i> {{ usuario?.nombre }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <li><span class="dropdown-item-text">{{ usuario?.email }}</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" (click)="logout(); $event.preventDefault()">
+                Cerrar Sesión
+              </a></li>
+            </ul>
+          </li>
+        </ng-container>
+
+        <!-- Navegación No Autenticada -->
+        <ng-container *ngIf="!isLoggedIn">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/auth/login" routerLinkActive="active">
+              Iniciar Sesión
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/auth/register" routerLinkActive="active">
+              Registrarse
+            </a>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+  </div>
+</nav>

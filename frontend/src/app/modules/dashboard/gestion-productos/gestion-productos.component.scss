@@ -1,0 +1,66 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.5rem 0;
+}
+
+:host {
+  display: block;
+  padding-bottom: 2rem;
+  color: #26372d;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0 1.5rem;
+}
+
+.panel {
+  padding: 1rem;
+  border: 1px solid rgba(38, 55, 45, 0.12);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.thumb {
+  width: 56px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.low-stock-row td {
+  background: #fff4e8;
+}
+
+.stock-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: #b93815;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: #1f6b4d;
+  border-color: #1f6b4d;
+}
+
+.panel h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,30 @@
+# Dependencies
+frontend/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/.angular/
+backend/target/
+
+# Environment files
+backend/.env
+*.env
+!.env.example
+!backend/.env.example
+
+# IDE and OS files
+.vscode/
+.idea/
+*.iml
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary migration/tool files
+.github/java-upgrade/
+backend/.github/java-upgrade/

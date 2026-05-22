@@ -1,0 +1,48 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0.85rem 1.25rem;
+  background: rgba(255, 250, 240, 0.94);
+  border-bottom: 1px solid rgba(78, 57, 26, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+.navbar-brand {
+  display: inline-flex;
+  gap: 0.65rem;
+  align-items: center;
+  color: #3d2a10;
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 8px;
+  background: #f1b82d;
+  color: #33220d;
+  font-weight: 800;
+  overflow: hidden;
+}
+
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nav-link {
+  color: #5d492a;
+  font-weight: 600;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: #1f5f45;
+}
+
+.badge {
+  background: #ba5b2c !important;
+}

@@ -1,0 +1,156 @@
+.admin-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  background: #24372d;
+  color: #fff8e7;
+}
+
+.brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.brand > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  background: #e5ad25;
+  color: #2b210f;
+  font-weight: 900;
+}
+
+.brand small {
+  display: block;
+  color: #c7d8cb;
+}
+
+nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+nav a {
+  padding: 0.75rem;
+  border-radius: 8px;
+  color: #eaf5ec;
+  text-decoration: none;
+}
+
+nav a.active,
+nav a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.admin-sidebar .btn {
+  margin-top: auto;
+}
+
+.admin-content {
+  padding: 2rem;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.admin-header h1 {
+  margin: 0.2rem 0 0;
+  font-size: 2.4rem;
+}
+
+.eyebrow {
+  color: #1f6b4d;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stats article,
+.panel {
+  border: 1px solid rgba(38, 55, 45, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(38, 55, 45, 0.06);
+}
+
+.stats article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.25rem;
+}
+
+.stats span,
+.status-row span,
+.order-row span {
+  color: #647368;
+}
+
+.stats strong {
+  font-size: 1.7rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 1rem;
+}
+
+.panel {
+  padding: 1.25rem;
+}
+
+.panel h2 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.status-row,
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eef1ec;
+}
+
+.order-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 120px;
+}
+
+.order-row div {
+  display: grid;
+}
+
+@media (max-width: 900px) {
+  .admin-shell,
+  .dashboard-grid,
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    min-height: auto;
+  }
+}

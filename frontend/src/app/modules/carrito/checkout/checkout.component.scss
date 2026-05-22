@@ -1,0 +1,24 @@
+.checkout {
+  display: grid;
+  place-items: start center;
+}
+
+.panel {
+  width: min(100%, 680px);
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.panel p {
+  color: #6c757d;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
