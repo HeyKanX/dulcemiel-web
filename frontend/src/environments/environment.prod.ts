@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5000/api'
+  apiUrl: 'https://api-webdulcemiel-2026-cna2g8h7fmb6g3gu.brazilsouth-01.azurewebsites.net/api'
 };

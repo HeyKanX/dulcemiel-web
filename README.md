@@ -122,3 +122,4 @@ npm run build
 - Si el backend no conecta a SQL Server, confirma que TCP/IP este habilitado y que el puerto `1433` responda.
 - Si cambias imagenes de productos, el backend versiona la URL para evitar cache del navegador.
 - La documentacion ampliada esta en `docs/`.
+- La preparacion y secuencia de despliegue gratuito en Azure esta en `docs/AZURE_DEPLOYMENT.md`.

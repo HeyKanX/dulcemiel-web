@@ -2,6 +2,7 @@ package com.dulcemiel.backend.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +46,6 @@ public class ImageUrlService {
     }
 
     private String baseUrl(HttpServletRequest request) {
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
     }
 }
