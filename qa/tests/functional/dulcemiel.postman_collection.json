@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "Dulce Miel criterio 5 API",
+    "description": "Casos sobre SQL local aislado. Fallos de CA11 y cantidad cero se registran como hallazgos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [{
+    "listen": "prerequest",
+    "script": {"exec": [
+      "if (!pm.collectionVariables.get('email')) {",
+      "  pm.collectionVariables.set('email', 'qa-' + Date.now() + '-' + Math.floor(Math.random()*100000) + '@example.test');",
+      "}"
+    ], "type": "text/javascript"}
+  }],
+  "variable": [
+    {"key": "baseUrl", "value": "http://127.0.0.1:5000/api"},
+    {"key": "email", "value": ""},
+    {"key": "password", "value": "Prueba123!"},
+    {"key": "adminPassword", "value": "QaAdmin2026!"},
+    {"key": "token", "value": ""},
+    {"key": "adminToken", "value": ""},
+    {"key": "productId", "value": ""},
+    {"key": "otherProductId", "value": ""},
+    {"key": "initialOtherStock", "value": ""},
+    {"key": "orderId", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "CA05 catálogo y producto sintético",
+      "request": {"method": "GET", "url": "{{baseUrl}}/productos"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA05 HTTP 200', () => pm.response.to.have.status(200));",
+        "var qaProduct = (pm.response.json().data || []).find(x => x.nombre === 'Miel QA');",
+        "pm.test('CA05 nombre, precio, disponibilidad', () => { pm.expect(qaProduct).to.exist; pm.expect(Number(qaProduct.precio)).to.eql(12.5); pm.expect(Number(qaProduct.stock)).to.eql(5); });",
+        "if (qaProduct) pm.collectionVariables.set('productId', qaProduct.id);",
+        "var qaOther = (pm.response.json().data || []).find(x => x.nombre === 'Miel multifloral 500g');",
+        "if (qaOther) { pm.collectionVariables.set('otherProductId', qaOther.id); pm.collectionVariables.set('initialOtherStock', qaOther.stock); }"
+      ]}}]
+    },
+    {
+      "name": "CA08 detalle inexistente",
+      "request": {"method": "GET", "url": "{{baseUrl}}/productos/2147483647"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA08 HTTP 404 y mensaje', () => { pm.response.to.have.status(404); pm.expect(pm.response.json().message).to.include('Producto no encontrado'); });"
+      ]}}]
+    },
+    {
+      "name": "CA01 registro válido",
+      "request": {"method": "POST", "url": "{{baseUrl}}/auth/register", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"nombre\":\"Cliente QA\",\"email\":\"{{email}}\",\"password\":\"{{password}}\",\"passwordConfirm\":\"{{password}}\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA01 crea cuenta y confirma', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().userId).to.be.a('number'); pm.expect(pm.response.json().message).to.include('registrado'); });"
+      ]}}]
+    },
+    {
+      "name": "CA02 correo duplicado",
+      "request": {"method": "POST", "url": "{{baseUrl}}/auth/register", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"nombre\":\"Cliente QA\",\"email\":\"{{email}}\",\"password\":\"{{password}}\",\"passwordConfirm\":\"{{password}}\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA02 rechaza duplicado', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().message).to.include('registrado'); });"
+      ]}}]
+    },
+    {
+      "name": "CA03 inicio de sesión",
+      "request": {"method": "POST", "url": "{{baseUrl}}/auth/login", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA03 autentica cliente', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().usuario.rol).to.eql('usuario'); pm.expect(pm.response.json().token).to.be.a('string'); });",
+        "if (pm.response.code === 200) pm.collectionVariables.set('token', pm.response.json().token);"
+      ]}}]
+    },
+    {
+      "name": "RNF02 perfil sin token",
+      "request": {"method": "GET", "url": "{{baseUrl}}/auth/perfil"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('RNF02 rechaza anónimo sin exponer datos', () => { pm.response.to.have.status(401); pm.expect(pm.response.text()).to.not.include('password'); pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });"
+      ]}}]
+    },
+    {
+      "name": "CA17 cliente no puede crear producto",
+      "request": {"method": "POST", "url": "{{baseUrl}}/productos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "body": {"mode": "formdata", "formdata": [{"key": "nombre", "value": "No autorizado", "type": "text"}, {"key": "precio", "value": "1", "type": "text"}, {"key": "stock", "value": "1", "type": "text"}]}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA17 deniega operación', () => pm.response.to.have.status(403));"
+      ]}}]
+    },
+    {
+      "name": "CA17 producto rechazado no se publica",
+      "request": {"method": "GET", "url": "{{baseUrl}}/productos"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA17 sin cambio en catálogo', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.some(x => x.nombre === 'No autorizado')).to.eql(false); });"
+      ]}}]
+    },
+    {
+      "name": "RNF02 cliente no ve pedidos administrativos",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos/admin/todos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('RNF02 bloquea lectura administrativa', () => { pm.response.to.have.status(403); pm.expect(pm.response.text()).to.not.include('contacto_email'); });"
+      ]}}]
+    },
+    {
+      "name": "CA09 agregar cuatro unidades",
+      "request": {"method": "POST", "url": "{{baseUrl}}/carrito/agregar", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"producto_id\":{{productId}},\"cantidad\":4}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA09 acepta cantidad dentro de stock', () => pm.response.to.have.status(201));"
+      ]}}]
+    },
+    {
+      "name": "CA11 rechazar acumulado seis con stock cinco",
+      "request": {"method": "POST", "url": "{{baseUrl}}/carrito/agregar", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"producto_id\":{{productId}},\"cantidad\":2}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA11 debe rechazar acumulado mayor que stock', () => pm.response.to.have.status(400));"
+      ]}}]
+    },
+    {
+      "name": "CA11 conservar cuatro unidades tras rechazo",
+      "request": {"method": "GET", "url": "{{baseUrl}}/carrito", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA11 cantidad sin cambios', () => { pm.response.to.have.status(200); const item = pm.response.json().data.find(x => Number(x.producto_id) === Number(pm.collectionVariables.get('productId'))); pm.expect(Number(item.cantidad)).to.eql(4); });"
+      ]}}]
+    },
+    {
+      "name": "CA10 y RNF05 cantidad cero",
+      "request": {"method": "POST", "url": "{{baseUrl}}/carrito/agregar", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"producto_id\":{{productId}},\"cantidad\":0}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA10/RNF05 rechaza cantidad cero', () => pm.response.to.have.status(400));"
+      ]}}]
+    },
+    {
+      "name": "CA13 datos de entrega inválidos",
+      "request": {"method": "POST", "url": "{{baseUrl}}/pedidos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"contacto_nombre\":\"Caso QA\",\"contacto_telefono\":\"abc\",\"direccion_entrega\":\"Calle QA\",\"distrito\":\"Prueba\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA13 rechaza teléfono inválido', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().message).to.include('contacto valido'); });"
+      ]}}]
+    },
+    {
+      "name": "CA13 preparar carrito vacío",
+      "request": {"method": "DELETE", "url": "{{baseUrl}}/carrito", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA13 carrito vaciado para caso límite', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "CA13 impedir pedido con carrito vacío",
+      "request": {"method": "POST", "url": "{{baseUrl}}/pedidos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"contacto_nombre\":\"Caso QA\",\"contacto_telefono\":\"987654321\",\"direccion_entrega\":\"Calle QA\",\"distrito\":\"Prueba\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA13 no crea pedido vacío', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().message).to.include('carrito'); });"
+      ]}}]
+    },
+    {
+      "name": "CA14 pedido no registrado tras rechazo",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA13/RNF05 no crea pedido', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data).to.be.an('array').that.is.empty; });"
+      ]}}]
+    },
+    {
+      "name": "CA12 preparar carrito válido",
+      "request": {"method": "POST", "url": "{{baseUrl}}/carrito/agregar", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"producto_id\":{{otherProductId}},\"cantidad\":1}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA12 producto disponible preparado', () => pm.response.to.have.status(201));"
+      ]}}]
+    },
+    {
+      "name": "CA12 crear pedido válido",
+      "request": {"method": "POST", "url": "{{baseUrl}}/pedidos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"contacto_nombre\":\"Caso QA\",\"contacto_telefono\":\"987654321\",\"direccion_entrega\":\"Calle QA\",\"distrito\":\"Prueba\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA12 número y total del pedido', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().pedido.numero_pedido).to.match(/^PED-/); pm.expect(Number(pm.response.json().pedido.total)).to.eql(28); });",
+        "if (pm.response.code === 201) pm.collectionVariables.set('orderId', pm.response.json().pedido.id);"
+      ]}}]
+    },
+    {
+      "name": "CA12 carrito vacío después del pedido",
+      "request": {"method": "GET", "url": "{{baseUrl}}/carrito", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA12 carrito vaciado', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data).to.be.an('array').that.is.empty; });"
+      ]}}]
+    },
+    {
+      "name": "CA12 stock descontado",
+      "request": {"method": "GET", "url": "{{baseUrl}}/productos/{{otherProductId}}"},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA12/RNF05 descuenta una unidad', () => { pm.response.to.have.status(200); pm.expect(Number(pm.response.json().data.stock)).to.eql(Number(pm.collectionVariables.get('initialOtherStock')) - 1); });"
+      ]}}]
+    },
+    {
+      "name": "CA14 lista propia de pedidos",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA14 contiene solo pedido del cliente nuevo', () => { pm.response.to.have.status(200); var orders = pm.response.json().data; pm.expect(orders).to.have.length(1); pm.expect(Number(orders[0].id)).to.eql(Number(pm.collectionVariables.get('orderId'))); pm.expect(orders[0]).to.have.all.keys('id', 'numero_pedido', 'total', 'estado', 'fecha_pedido', 'fecha_entrega', 'contacto_nombre', 'contacto_telefono', 'contacto_email', 'direccion_entrega', 'distrito', 'referencia', 'notas'); });"
+      ]}}]
+    },
+    {
+      "name": "CA15 detalle del pedido propio",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos/{{orderId}}", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA15 detalle y subtotal', () => { pm.response.to.have.status(200); var body = pm.response.json(); pm.expect(Number(body.pedido.id)).to.eql(Number(pm.collectionVariables.get('orderId'))); pm.expect(body.detalles).to.have.length(1); pm.expect(Number(body.detalles[0].cantidad)).to.eql(1); pm.expect(Number(body.detalles[0].subtotal)).to.eql(28); });"
+      ]}}]
+    },
+    {
+      "name": "CA18 iniciar administrador QA",
+      "request": {"method": "POST", "url": "{{baseUrl}}/auth/login", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"email\":\"qa_admin@example.test\",\"password\":\"{{adminPassword}}\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA18 administrador sintético disponible', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().usuario.rol).to.eql('admin'); });",
+        "if (pm.response.code === 200) pm.collectionVariables.set('adminToken', pm.response.json().token);"
+      ]}}]
+    },
+    {
+      "name": "CA16 crear producto administrativo",
+      "request": {"method": "POST", "url": "{{baseUrl}}/productos", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}], "body": {"mode": "formdata", "formdata": [{"key": "nombre", "value": "Producto QA {{email}}", "type": "text"}, {"key": "descripcion", "value": "Descripción sintética", "type": "text"}, {"key": "precio", "value": "9.00", "type": "text"}, {"key": "stock", "value": "2", "type": "text"}, {"key": "categoria", "value": "QA", "type": "text"}]}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA16 producto creado', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().productId).to.be.a('number'); });",
+        "if (pm.response.code === 201) pm.collectionVariables.set('createdProductId', pm.response.json().productId);"
+      ]}}]
+    },
+    {
+      "name": "CA16 actualizar producto administrativo",
+      "event": [{"listen": "prerequest", "script": {"type": "text/javascript", "exec": ["if (!pm.collectionVariables.get('createdProductId')) pm.execution.skipRequest();"]}}, {"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA16 actualización aceptada', () => pm.response.to.have.status(200));"
+      ]}}],
+      "request": {"method": "PUT", "url": "{{baseUrl}}/productos/{{createdProductId}}", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}], "body": {"mode": "formdata", "formdata": [{"key": "nombre", "value": "Producto QA {{email}}", "type": "text"}, {"key": "descripcion", "value": "Descripción sintética", "type": "text"}, {"key": "precio", "value": "9.00", "type": "text"}, {"key": "stock", "value": "3", "type": "text"}, {"key": "categoria", "value": "QA", "type": "text"}, {"key": "estado", "value": "disponible", "type": "text"}]}},
+      "description": "Bloqueado si falla la creación anterior."
+    },
+    {
+      "name": "CA16 leer producto actualizado",
+      "event": [{"listen": "prerequest", "script": {"type": "text/javascript", "exec": ["if (!pm.collectionVariables.get('createdProductId')) pm.execution.skipRequest();"]}}, {"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA16 conserva stock y descripción', () => { pm.response.to.have.status(200); pm.expect(Number(pm.response.json().data.stock)).to.eql(3); pm.expect(pm.response.json().data.descripcion).to.eql('Descripción sintética'); });"
+      ]}}],
+      "request": {"method": "GET", "url": "{{baseUrl}}/productos/{{createdProductId}}"},
+      "description": "Bloqueado si falla la creación anterior."
+    },
+    {
+      "name": "CA18 cambiar estado permitido",
+      "request": {"method": "PUT", "url": "{{baseUrl}}/pedidos/{{orderId}}", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"estado\":\"enviado\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA18 estado permitido aceptado', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "CA18 leer estado posterior",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos/{{orderId}}", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA18 estado consultable', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().pedido.estado).to.eql('enviado'); });"
+      ]}}]
+    },
+    {
+      "name": "CA19 estado no permitido",
+      "request": {"method": "PUT", "url": "{{baseUrl}}/pedidos/{{orderId}}", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"estado\":\"desconocido\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA19 rechaza estado inválido', () => pm.response.to.have.status(400));"
+      ]}}]
+    },
+    {
+      "name": "CA19 estado previo intacto",
+      "request": {"method": "GET", "url": "{{baseUrl}}/pedidos/{{orderId}}", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA19 sin modificación', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().pedido.estado).to.eql('enviado'); });"
+      ]}}]
+    },
+    {
+      "name": "CA19 pedido inexistente",
+      "request": {"method": "PUT", "url": "{{baseUrl}}/pedidos/2147483647", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\"estado\":\"enviado\"}"}},
+      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+        "pm.test('CA19 pedido inexistente rechazado', () => pm.response.to.have.status(404));"
+      ]}}]
+    }
+  ]
+}
