@@ -58,12 +58,17 @@ public class CarritoController {
         if (products.isEmpty()) return responses.error(HttpStatus.NOT_FOUND, "Producto no encontrado");
         if (integer(products.get(0).get("stock")) < quantity) return responses.error(HttpStatus.BAD_REQUEST, "Stock insuficiente");
         var existing = jdbc.queryForList("SELECT id, cantidad FROM carrito WHERE usuario_id = ? AND producto_id = ?", user.userId(), productId);
+        int currentQuantity = existing.isEmpty() ? 0 : integer(existing.get(0).get("cantidad"));
+        int requestedTotal = currentQuantity + quantity;
+        if (requestedTotal > integer(products.get(0).get("stock"))) {
+            return responses.error(HttpStatus.BAD_REQUEST, "Stock insuficiente");
+        }
         if (existing.isEmpty()) {
             jdbc.update("INSERT INTO carrito (usuario_id, producto_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)",
                     user.userId(), productId, quantity, products.get(0).get("precio"));
         } else {
             jdbc.update("UPDATE carrito SET cantidad = ? WHERE id = ?",
-                    integer(existing.get(0).get("cantidad")) + quantity, existing.get(0).get("id"));
+                    requestedTotal, existing.get(0).get("id"));
         }
         return responses.created("success", true, "message", "Producto agregado al carrito");
     }
