@@ -1,0 +1,7 @@
+.venv/
+.local/
+node_modules/
+__pycache__/
+*.pyc
+artifacts/
+test-results/

@@ -1,0 +1,8 @@
+{
+  "name": "dulce-miel-qa-tools",
+  "private": true,
+  "devDependencies": {
+    "axe-core": "^4.10.3",
+    "newman": "^6.2.2"
+  }
+}

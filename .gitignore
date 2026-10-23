@@ -4,6 +4,7 @@ frontend/node_modules/
 # Build outputs
 frontend/dist/
 frontend/.angular/
+frontend/coverage/
 backend/target/
 
 # Environment files
