@@ -11,8 +11,10 @@ qa/
   tests/
     functional/
       api/                     Colección Newman
-      features/steps/          Escenarios Gherkin y pasos Behave
-      pages/                   Page Objects Selenium
+      features/                Escenarios Gherkin (palabras clave en inglés, pasos en español)
+        steps/                 Definiciones Behave separadas por funcionalidad
+      pages/                   BasePage y Page Objects Selenium
+      testsupport/             Fábrica y configuración del navegador
     non-functional/
       accessibility/           Lista manual para axe DevTools y revisión humana
       compatibility/           Playwright
@@ -25,9 +27,11 @@ qa/
 
 La guía de términos, la relación con los criterios de la rúbrica y la interpretación del conteo se encuentra en `docs/terminologia-y-rubrica.md`.
 
+El flujo que conecta requisito, criterio, caso diseñado, escenario automatizado, ejecución, evidencia y defecto se documenta en `docs/flujo-de-automatizacion.md`. Sigue los patrones pertinentes de las prácticas disponibles de las semanas 5, 8 y 9, adaptados al entorno y a los tipos de prueba de Dulce Miel.
+
 ## Herramientas
 
-El proyecto organiza las comprobaciones con JUnit 5, Mockito, Spring Boot Test, MockMvc, Testcontainers, JaCoCo, Jasmine/Karma, Karma Coverage, Behave/Selenium, Playwright, Postman/Newman, Grafana k6 y axe DevTools Extension.
+El proyecto organiza las comprobaciones con JUnit 5, Mockito, Spring Boot Test, MockMvc, Testcontainers, JaCoCo, Jasmine/Karma, Karma Coverage, Behave/Selenium, Playwright, Postman/Newman, Grafana k6, axe DevTools Extension y axe-core.
 
 JaCoCo se ejecuta en el backend y genera cobertura de las clases Java probadas; Karma Coverage se usa para Angular. Las métricas deben informarse por componente y acompañarse de lectura de los casos límite y del código no cubierto.
 
@@ -87,6 +91,12 @@ JaCoCo deja el informe HTML en `backend/target/site/jacoco/index.html` y datos e
 
 La verificación con axe DevTools Extension y las tareas manuales de teclado, foco, zoom, contraste y lector de pantalla se describen en `tests/non-functional/accessibility/axe-devtools-checklist.md`. Registrar cada resultado y su evidencia en `tests/non-functional/accessibility/manual_review.csv`. Los hallazgos automáticos necesitan revisión humana antes de clasificarse como defectos.
 
+La revisión automatizada reproducible con axe-core se ejecuta mediante `tests/non-functional/accessibility/axe_core_scan.py`. La corrida del 23 de octubre de 2026 sobre las pantallas públicas desplegadas y sus límites se documenta en `test-runs/axe-core-2026-10-23.md`. Sus resultados no completan por sí solos las tareas manuales de `manual_review.csv`.
+
+La medición Lighthouse del catálogo desplegado del mismo día está resumida en `test-runs/lighthouse-2026-10-23.md`, con el PDF original en `../../evidencias-criterio5/lighthouse/20261023-publico/`. Su puntuación de accesibilidad y la corrida axe-core se informan como mediciones distintas; ambas señalan el selector de categoría sin nombre accesible.
+
 ## Evidencia y estados
 
 Por corrida, conservar fecha, commit, ambiente, datos sintéticos, salida, capturas, métricas y decisión humana bajo `../../evidencias-criterio5/`. No guardar credenciales ni tokens en Git. Los estados parciales no cuentan como aprobación íntegra del criterio; los casos no ejecutados quedan fuera de los porcentajes de aprobación.
+
+El ciclo de Behave/Selenium inicia un navegador por escenario, comprueba el aislamiento para los escenarios `@writes`, guarda captura y texto de página al terminar, y cierra el navegador. La preparación de datos vía API se usa cuando el escenario requiere una cuenta previamente creada; las acciones de interfaz se verifican en Selenium. Consulta `docs/flujo-de-automatizacion.md` antes de añadir casos para conservar esta separación.
