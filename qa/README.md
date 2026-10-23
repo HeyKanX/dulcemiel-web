@@ -13,7 +13,7 @@ py -m playwright install chromium firefox webkit
 .\infra\bootstrap.ps1
 ```
 
-El script de preparación usa la base aislada `dulce-miel-qa-c5` en `127.0.0.1:14333`. Ejecuta `./infra/run-backend.ps1` desde `qa/` y `npm start -- --host 127.0.0.1 --port 4200` desde `frontend/` en otra terminal.
+El script de preparación usa la base aislada `dulce-miel-qa-c5` en `127.0.0.1:14333`. Ejecuta `./infra/run-backend.ps1` desde `qa/` y `npm start -- --host 127.0.0.1 --port 4200` desde `frontend/` en otra terminal. Si el backend de QA ya está activo en el puerto 5000, el script lo informa y termina sin iniciar una segunda instancia.
 
 ## Pruebas funcionales de interfaz con Behave y Selenium
 
