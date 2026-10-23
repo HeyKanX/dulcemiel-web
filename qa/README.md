@@ -53,7 +53,7 @@ Desde la raíz `qa/`, para Gherkin y Selenium:
 $env:QA_ISOLATED_DB = '1'
 $env:QA_RUN_ID = (Get-Date -Format 'yyyyMMdd-HHmmss')
 $env:QA_ARTIFACTS = '..\..\evidencias-criterio5'
-py -m behave tests/functional/features --lang es --junit --junit-directory '..\..\evidencias-criterio5' -f progress
+py -m behave tests/functional/features --lang en --junit --junit-directory '..\..\evidencias-criterio5' -f progress
 ```
 
 Para la colección API y las verificaciones de compatibilidad:

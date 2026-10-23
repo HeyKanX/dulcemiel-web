@@ -1,19 +1,19 @@
-# language: es
-# Fuente: Anexo C, Tabla C2 del informe. Producto de prueba con stock 5.
-Característica: Consulta pública del catálogo
+# language: en
+# Source: Appendix C, Table C2 of the report. Test product with stock of 5.
+Feature: Public catalog browsing
 
   @TC-F-005 @CA05 @HU03
-  Escenario: TC-F-005 / CA05 - mostrar datos esenciales del producto publicado
-    Dado que el visitante abre el catálogo
-    Entonces encuentra el producto sintético con nombre precio y disponibilidad
+  Scenario: TC-F-005 / CA05 - show essential details for a published product
+    Given the visitor opens the catalog
+    Then the visitor finds the synthetic product with its name, price, and availability
 
   @TC-F-007 @CA07 @HU04
-  Escenario: TC-F-007 / CA07 - mostrar detalle de un producto existente
-    Dado que el visitante abre el catálogo
-    Cuando abre el detalle del producto sintético
-    Entonces ve su descripción precio stock y categoría
+  Scenario: TC-F-007 / CA07 - show the details of an existing product
+    Given the visitor opens the catalog
+    When the visitor opens the synthetic product details
+    Then the visitor sees its description, price, stock, and category
 
   @TC-F-008 @CA08 @HU04
-  Escenario: TC-F-008 / CA08 - informar producto inexistente
-    Dado que el visitante abre un detalle inexistente
-    Entonces encuentra un mensaje comprensible y un enlace de regreso
+  Scenario: TC-F-008 / CA08 - report a nonexistent product
+    Given the visitor opens a nonexistent product detail
+    Then the visitor sees a clear message and a link to return
