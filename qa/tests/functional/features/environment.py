@@ -3,10 +3,13 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+FUNCTIONAL_ROOT = Path(__file__).resolve().parents[1]
+QA_ROOT = FUNCTIONAL_ROOT.parents[1]
+for root in (str(QA_ROOT), str(FUNCTIONAL_ROOT)):
+    if root not in sys.path:
+        sys.path.insert(0, root)
 
-from selenium import webdriver
-
+from testsupport.driver_factory import create_driver
 from utils.config import API_URL, WEB_URL, require_isolated_db
 
 
@@ -19,18 +22,23 @@ def before_all(context):
 
 
 def before_scenario(context, scenario):
+    context.browser = None
     if "writes" in scenario.tags:
         require_isolated_db()
-    options = webdriver.ChromeOptions()
-    if os.getenv("QA_HEADLESS", "1") == "1":
-        options.add_argument("--headless=new")
-    options.add_argument("--window-size=1365,900")
-    context.browser = webdriver.Chrome(options=options)
+    context.browser = create_driver()
 
 
 def after_scenario(context, scenario):
-    if scenario.status.name != "passed":
-        safe = re.sub(r"[^a-zA-Z0-9_-]", "_", scenario.name)[:80]
-        context.browser.save_screenshot(str(context.artifacts / f"{safe}.png"))
-        (context.artifacts / f"{safe}.txt").write_text(context.browser.find_element("tag name", "body").text[-3000:], encoding="utf-8")
-    context.browser.quit()
+    browser = getattr(context, "browser", None)
+    if browser is None:
+        return
+
+    safe = re.sub(r"[^a-zA-Z0-9_-]", "_", scenario.name)[:80]
+    status = getattr(scenario.status, "name", str(scenario.status)).lower()
+    evidence_name = f"{context.run_id}_{status}_{safe}"
+    try:
+        browser.save_screenshot(str(context.artifacts / f"{evidence_name}.png"))
+        body = browser.find_element("tag name", "body").text[-3000:]
+        (context.artifacts / f"{evidence_name}.txt").write_text(body, encoding="utf-8")
+    finally:
+        browser.quit()

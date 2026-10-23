@@ -1,18 +1,16 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from pages.base_page import BasePage
 
 
-class CatalogPage:
+class CatalogPage(BasePage):
     def __init__(self, driver, base_url):
-        self.driver = driver
-        self.base_url = base_url
-        self.wait = WebDriverWait(driver, 12)
+        super().__init__(driver, base_url)
 
     def open(self):
-        self.driver.get(f"{self.base_url}/productos")
-        self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".catalog-header h2")))
+        super().open("/productos")
+        self.wait_visible((By.CSS_SELECTOR, ".catalog-header h2"))
         self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, ".spinner-border")))
 
     def product(self, name):
@@ -22,4 +20,4 @@ class CatalogPage:
         link = self.product(name).find_element(By.LINK_TEXT, "Ver")
         self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", link)
         link.send_keys(Keys.ENTER)
-        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1")))
+        self.wait_visible((By.CSS_SELECTOR, "h1"))

@@ -11,8 +11,10 @@ qa/
   tests/
     functional/
       api/                     Colección Newman
-      features/steps/          Escenarios Gherkin y pasos Behave
-      pages/                   Page Objects Selenium
+      features/                Escenarios Gherkin (palabras clave en inglés, pasos en español)
+        steps/                 Definiciones Behave separadas por funcionalidad
+      pages/                   BasePage y Page Objects Selenium
+      testsupport/             Fábrica y configuración del navegador
     non-functional/
       accessibility/           Lista manual para axe DevTools y revisión humana
       compatibility/           Playwright
