@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
-import { AuthService } from './auth.service';
-import { authGuard } from './auth.guard';
-import { adminGuard } from './admin.guard';
-import { JwtInterceptor } from './jwt.interceptor';
+import { AuthService } from '../../../src/app/autenticaciones/auth.service';
+import { authGuard } from '../../../src/app/autenticaciones/auth.guard';
+import { adminGuard } from '../../../src/app/autenticaciones/admin.guard';
+import { JwtInterceptor } from '../../../src/app/autenticaciones/jwt.interceptor';
 
 describe('Guards e interceptor', () => {
   const auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'canAccessAdmin', 'getToken']);

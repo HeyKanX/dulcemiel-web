@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
-import { AuthService } from './auth.service';
-import { environment } from '../../environments/environment';
-import { Usuario } from '../models/usuario.model';
+import { AuthService } from '../../../src/app/autenticaciones/auth.service';
+import { environment } from '../../../src/environments/environment';
+import { Usuario } from '../../../src/app/models/usuario.model';
 
 describe('AuthService, auditoría de sesión', () => {
   let service: AuthService;

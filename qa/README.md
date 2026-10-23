@@ -1,45 +1,92 @@
-# Auditoría del criterio 5 de Dulce Miel
+# Pruebas de calidad de Dulce Miel
 
-Esta carpeta es la única raíz de pruebas funcionales, de aceptación y no funcionales añadidas al checkout `Auditoria/codigo-auditado`. El código productivo auditado corresponde a `9e46844`; los resultados negativos son hallazgos de la auditoría. La fuente de HU/CA es la Tabla C2 del Anexo C del informe. `cases.csv` contiene 34 casos CA y 10 casos no funcionales adicionales, con precondiciones, datos, pasos, esperado, técnica, prioridad y trazabilidad. `estado=no ejecutado` se sustituye solo a partir de evidencia de una corrida identificada.
+Esta carpeta concentra los artefactos de prueba y mantiene separado el código productivo. El código auditado corresponde al commit `9e46844`. Las pruebas del backend Java están en `backend/src/test`, conforme a la estructura Maven; las pruebas unitarias de Angular están en `frontend/tests/unit`.
 
-## Mapa de herramientas
+## Organización
 
-| Ruta | Propósito |
-|---|---|
-| `features/*.feature` y `features/steps/` | Aceptación Gherkin con Behave y Selenium; selectores compartidos en `pages/`. |
-| `tests/functional/dulcemiel.postman_collection.json` | API funcional con Postman/Newman: 32 solicitudes diseñadas, incluyendo CA11, pedido, seguimiento y permisos administrativos. |
-| `tests/non-functional/playwright_compatibility.py` | Compatibilidad de motores y anchos; cobertura complementaria RNF04/CA32. |
-| `tests/non-functional/accessibility_audit.py` | Exploración con axe-core; requiere confirmación manual para un defecto. |
-| `tests/non-functional/k6/catalogo.js` | Rendimiento de lectura local con perfiles smoke, baseline y moderate. |
-| `infra/` | SQL Server aislado, producto Miel QA y cuenta administrativa sintética. |
+```text
+qa/
+  test-design/                 Catálogo de casos diseñados
+  test-runs/                   Resultados por corrida
+  tests/
+    functional/
+      api/                     Colección Newman
+      features/steps/          Escenarios Gherkin y pasos Behave
+      pages/                   Page Objects Selenium
+    non-functional/
+      accessibility/           Lista manual para axe DevTools y revisión humana
+      compatibility/           Playwright
+      performance/k6/          Escenario de carga local
+  infra/                       SQL de prueba y arranque aislado
+  utils/                       Exportación, consolidación y reportes
+```
 
-## Preparación del ambiente Windows
+`test-design/cases.csv` describe los casos: base, tipo, nivel, requisito o criterio, precondiciones, datos, pasos y resultado esperado. `test-runs/executions.csv` registra la corrida, el resultado observado, la evidencia y el defecto asociado. Una fila del catálogo no significa que el caso se haya ejecutado.
 
-Desde `qa/`, ejecutar `npm ci` y `py -m pip install -r requirements.txt`. Instalar los navegadores con `py -m playwright install chromium firefox webkit`. Behave usa Chrome instalado mediante Selenium Manager. Para k6, usar `C:\Program Files\k6\k6.exe` si no aparece en PATH.
+La guía de términos, la relación con los criterios de la rúbrica y la interpretación del conteo se encuentra en `docs/terminologia-y-rubrica.md`.
 
-Ejecutar `./infra/bootstrap.ps1` una vez. Crea exclusivamente `dulce-miel-qa-c5` en `127.0.0.1:14333`, aplica `backend/database/schema.sql` y añade `Miel QA` (precio 12.50, stock 5) y `qa_admin@example.test` para las solicitudes administrativas. El script del esquema elimina tablas: nunca apuntarlo al contenedor habitual. El secreto SQL se guarda solo en `qa/.local/connection.json`, ignorado por Git. El script no restablece una instancia existente; para repetir con base limpia se necesita inspeccionar y retirar explícitamente el contenedor QA identificado.
+## Herramientas
 
-En una terminal iniciar `./infra/run-backend.ps1`. Empaqueta el backend y lo ejecuta en `127.0.0.1:5000` con conexión a la instancia QA; no depende de `.env` del proyecto original. En otra terminal, desde `frontend/`, iniciar `npm start -- --host 127.0.0.1 --port 4200`. Confirmar que `http://127.0.0.1:5000/api/productos` contiene `Miel QA` y que la tienda local abre en `http://127.0.0.1:4200/productos`.
+El proyecto organiza las comprobaciones con JUnit 5, Mockito, Spring Boot Test, MockMvc, Testcontainers, JaCoCo, Jasmine/Karma, Karma Coverage, Behave/Selenium, Playwright, Postman/Newman, Grafana k6 y axe DevTools Extension.
 
-## Corridas
+JaCoCo se ejecuta en el backend y genera cobertura de las clases Java probadas; Karma Coverage se usa para Angular. Las métricas deben informarse por componente y acompañarse de lectura de los casos límite y del código no cubierto.
 
-En PowerShell desde `qa/`:
+## Preparación del entorno local
+
+Desde `qa/`, instalar las dependencias de Node y Python:
+
+```powershell
+npm ci
+py -m pip install -r requirements.txt
+py -m playwright install chromium firefox webkit
+```
+
+Ejecutar `./infra/bootstrap.ps1` una vez para crear exclusivamente la base aislada `dulce-miel-qa-c5` en `127.0.0.1:14333`. El script del esquema elimina tablas, por lo que el contenedor de QA no se debe apuntar a la base de trabajo.
+
+En una terminal de `qa/`, iniciar el backend con `./infra/run-backend.ps1`. En otra terminal, desde `frontend/`, iniciar Angular con `npm start -- --host 127.0.0.1 --port 4200`. Confirmar la disponibilidad de la API local y el catálogo en el navegador.
+
+## Ejecución de pruebas
+
+Desde la raíz `qa/`, para Gherkin y Selenium:
 
 ```powershell
 $env:QA_ISOLATED_DB = '1'
 $env:QA_RUN_ID = (Get-Date -Format 'yyyyMMdd-HHmmss')
 $env:QA_ARTIFACTS = '..\..\evidencias-criterio5'
-py -m behave features --lang es --junit --junit-directory '..\..\evidencias-criterio5' -f progress
-.\node_modules\.bin\newman.cmd run .\tests\functional\dulcemiel.postman_collection.json -r cli,junit --reporter-junit-export '..\..\evidencias-criterio5\api-newman.xml'
-py tests/non-functional/playwright_compatibility.py
-py tests/non-functional/accessibility_audit.py
-& 'C:\Program Files\k6\k6.exe' run -e QA_LOAD_PROFILE=smoke -e QA_K6_SUMMARY=..\..\evidencias-criterio5\k6-smoke.json .\tests\non-functional\k6\catalogo.js
+py -m behave tests/functional/features --lang es --junit --junit-directory '..\..\evidencias-criterio5' -f progress
 ```
 
-Para `baseline` y `moderate`, repetir k6 con el perfil y un nombre de resumen propio, después de revisar CPU, memoria y estabilidad del SQL QA. No aplicar carga a servicios publicados. Los umbrales de RNF03 están declarados antes de medir: API p95 ≤ 2 s y página p95 ≤ 3 s. k6 mide la respuesta HTTP de la página, no tiempo de renderizado; esa limitación debe constar en el informe. `QA_WEB_URL` y `QA_API_URL` solo aceptan localhost o 127.0.0.1.
+Para la colección API y las verificaciones de compatibilidad:
 
-## Evidencia y revisión humana
+```powershell
+.\node_modules\.bin\newman.cmd run .\tests\functional\api\dulcemiel.postman_collection.json -r cli,junit --reporter-junit-export '..\..\evidencias-criterio5\api-newman.xml'
+py tests/non-functional/compatibility/playwright_compatibility.py
+```
 
-Por cada corrida registrar fecha, commit, versión de herramientas, contenedor SQL, perfiles, datos, salidas, capturas, métricas y decisión humana en `../../evidencias-criterio5/`. Los fallos de aserción se conservan. Si una corrida es inválida por preparación o herramienta, se archiva como tal y se repite con una nueva identificación. No registrar tokens, contraseñas ni respuestas que incluyan datos de usuarios en los artefactos compartidos. Las salidas axe son hallazgos automáticos por regla y elemento; completar la lista manual de teclado, foco, zoom 200 %, lector y contraste antes de atribuir conformidad WCAG.
+Para el perfil local de rendimiento:
 
-La cobertura de diseño se calcula sobre los 34 CA de la Tabla C2. Informar por separado casos automatizados, ejecutados, aprobados, fallidos, bloqueados y no ejecutados. Una prueba parcial no aprueba el CA completo. En la corrida registrada, la creación administrativa sin imagen respondió 500 y bloqueó las dos solicitudes que dependían de su identificador; `cases.csv` y el informe técnico documentan el alcance exacto.
+```powershell
+& 'C:\Program Files\k6\k6.exe' run -e QA_LOAD_PROFILE=smoke -e QA_K6_SUMMARY=..\..\evidencias-criterio5\k6-smoke.json .\tests\non-functional\performance\k6\catalogo.js
+```
+
+Los perfiles smoke, baseline y moderate usan solo localhost. Las metas previas son p95 de API ≤ 2000 ms, p95 de página HTTP ≤ 3000 ms y errores < 5 %. La latencia de página mide la respuesta HTTP inicial, no el tiempo de renderizado o interacción.
+
+Para las pruebas unitarias y la cobertura:
+
+```powershell
+# En frontend/
+npm run test:coverage
+
+# En backend/
+.\mvnw.cmd clean verify
+```
+
+JaCoCo deja el informe HTML en `backend/target/site/jacoco/index.html` y datos en formato XML junto al informe. La suite de integración necesita Docker para levantar SQL Server con Testcontainers.
+
+## Accesibilidad
+
+La verificación con axe DevTools Extension y las tareas manuales de teclado, foco, zoom, contraste y lector de pantalla se describen en `tests/non-functional/accessibility/axe-devtools-checklist.md`. Registrar cada resultado y su evidencia en `tests/non-functional/accessibility/manual_review.csv`. Los hallazgos automáticos necesitan revisión humana antes de clasificarse como defectos.
+
+## Evidencia y estados
+
+Por corrida, conservar fecha, commit, ambiente, datos sintéticos, salida, capturas, métricas y decisión humana bajo `../../evidencias-criterio5/`. No guardar credenciales ni tokens en Git. Los estados parciales no cuentan como aprobación íntegra del criterio; los casos no ejecutados quedan fuera de los porcentajes de aprobación.
