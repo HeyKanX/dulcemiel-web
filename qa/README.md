@@ -39,7 +39,7 @@ New-Item -ItemType Directory -Force $e | Out-Null
 
 ## Pruebas unitarias, integración y cobertura
 
-Detén el backend de QA con `Ctrl+C` en la terminal donde se ejecuta `run-backend.ps1` antes de lanzar `.\mvnw.cmd clean verify` desde `backend/`. En Windows, el proceso mantiene abierto el JAR de `target` e impide que Maven limpie esa carpeta. La suite de integración usa Docker y Testcontainers para SQL Server.
+Detén el backend de QA con `.\infra\stop-backend.ps1` desde `qa/` antes de lanzar `.\mvnw.cmd clean verify` desde `backend/`. En Windows, el proceso mantiene abierto el JAR de `target` e impide que Maven limpie esa carpeta. La suite de integración usa Docker y Testcontainers para SQL Server.
 
 Si las aserciones fallan, conserva los XML de `backend/target/surefire-reports/` y ejecuta `.\mvnw.cmd jacoco:report` desde `backend/` para generar el reporte de cobertura con los datos recogidos antes del fallo. Para volver a usar la aplicación, ejecuta `.\mvnw.cmd package -DskipTests` desde `backend/` y luego `./infra/run-backend.ps1` desde `qa/`.
 
