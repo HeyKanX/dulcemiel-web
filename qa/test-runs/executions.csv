@@ -1,0 +1,28 @@
+﻿id_corrida,fecha,id_caso,commit_base,ambiente,resultado,resultado_observado,evidencia,defecto,severidad,herramienta_ejecutada
+AUD-C5-20261020,2026-10-20,TC-F-001,9e46844,QA local aislado,parcial aprobado,Registro y respuesta API correctos; recorrido web aprobado,behave.log; api-newman.xml,,,Behave; Newman
+AUD-C5-20261020,2026-10-20,TC-F-002,9e46844,QA local aislado,parcial aprobado,Correo duplicado rechazado en API y web,behave.log; api-newman.xml,,,Behave; Newman
+AUD-C5-20261020,2026-10-20,TC-F-003,9e46844,QA local aislado,parcial aprobado,Login API correcto; rol cliente observado,api-newman.xml,,,Newman
+AUD-C5-20261020,2026-10-20,TC-F-004,9e46844,QA local aislado,parcial aprobado,Credenciales incorrectas rechazadas en web; cuenta inactiva pendiente,behave.log,,,Behave
+AUD-C5-20261020,2026-10-20,TC-F-005,9e46844,QA local aislado,parcial aprobado,Catálogo y producto sintético visibles,behave.log; api-newman.xml,,,Behave; Newman
+AUD-C5-20261020,2026-10-20,TC-F-007,9e46844,QA local aislado,parcial aprobado,Detalle del producto visible en web,behave.log,,,Behave
+AUD-C5-20261020,2026-10-20,TC-F-008,9e46844,QA local aislado,parcial aprobado,API devuelve 404; mensaje web no comprobado íntegramente,behave.log; api-newman.xml,,,Behave; Newman
+AUD-C5-20261020,2026-10-20,TC-F-009,9e46844,QA local aislado,parcial aprobado,API agregó cuatro unidades; falta recorrido completo de interfaz,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-010,9e46844,QA local aislado,fallido,La API aceptó cantidad cero con HTTP 201; se esperaba HTTP 400 y conservar carrito y stock.,api-newman.xml,D-C5-02,media,Newman
+AUD-C5-20261020,2026-10-20,TC-F-012,9e46844,QA local aislado,fallido,"Con stock cinco, 4+2 respondió 201 y dejó seis; se esperaba rechazo y conservar cuatro",api-newman.xml,D-C5-01,alta,Newman
+AUD-C5-20261020,2026-10-20,TC-F-013,9e46844,QA local aislado,parcial aprobado,"API generó pedido, vació carrito y descontó stock; interfaz pendiente",api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-014,9e46844,QA local aislado,parcial aprobado,API rechazó carrito vacío; otros campos y mensajes web pendientes,behave.log; api-newman.xml,,,Behave parcial; Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-015,9e46844,QA local aislado,parcial aprobado,API devolvió el pedido del cliente QA; vista de seguimiento pendiente,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-016,9e46844,QA local aislado,parcial aprobado,API mostró detalle y subtotal propio; vista de seguimiento pendiente,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-017,9e46844,QA local aislado,parcial fallido,POST de producto sin imagen respondió 500; actualización dependiente bloqueada,api-newman.xml; api-newman.log,D-C5-06,alta,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-018,9e46844,QA local aislado,parcial aprobado,Cliente recibió 403 y el producto no apareció en catálogo,behave.log; api-newman.xml,,,Behave parcial; Newman
+AUD-C5-20261020,2026-10-20,TC-F-019,9e46844,QA local aislado,parcial aprobado,API aceptó estado permitido y lo devolvió; UI pendiente,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-F-020,9e46844,QA local aislado,parcial aprobado,API rechazó estado inválido y pedido inexistente sin cambiar estado,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-NF-ACC-002,9e46844,QA local aislado,parcial fallido,Cuatro campos de registro sin nombre accesible; revisión de lector pendiente,axe-results.json,D-C5-04,alta,axe-core exploratorio
+AUD-C5-20261020,2026-10-20,TC-NF-ACC-003,9e46844,QA local aislado,parcial fallido,Dos campos de login sin nombre accesible; revisión de lector pendiente,axe-results.json,D-C5-04,alta,axe-core exploratorio
+AUD-C5-20261020,2026-10-20,TC-NF-ACC-015,9e46844,QA local aislado,parcial fallido,Selector de categoría sin nombre accesible; consistencia global pendiente,axe-results.json,D-C5-05,media,axe-core exploratorio
+AUD-C5-20261020,2026-10-20,TC-NF-REN-001,9e46844,QA local aislado,aprobado en entorno local,Tres perfiles bajo p95 de página HTTP 3000 ms y 0 % de errores,k6-smoke.json; k6-baseline.json; k6-moderate.json,,,k6
+AUD-C5-20261020,2026-10-20,TC-NF-REN-002,9e46844,QA local aislado,aprobado en entorno local,Tres perfiles bajo p95 de API 2000 ms y 0 % de errores,k6-smoke.json; k6-baseline.json; k6-moderate.json,,,k6
+AUD-C5-20261020,2026-10-20,TC-NF-COM-001,9e46844,QA local aislado,parcial aprobado,Seis combinaciones motor/ancho sin desbordamiento en dos vistas,playwright.log,,,Playwright
+AUD-C5-20261020,2026-10-20,TC-NF-SEG-001,9e46844,QA local aislado,parcial aprobado,Cliente obtuvo 403 y producto no apareció,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-NF-INT-001,9e46844,QA local aislado,parcial aprobado,Pedido con carrito vacío rechazado; dato inválido completo pendiente,api-newman.xml,,,Newman parcial
+AUD-C5-20261020,2026-10-20,TC-NF-INT-002,9e46844,QA local aislado,fallido,Tras login y recarga del catálogo se mostró error de carga,behave.log; CNF-INT-02_*.png,D-C5-03,media,Behave/Selenium

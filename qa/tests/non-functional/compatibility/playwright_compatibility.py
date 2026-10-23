@@ -4,7 +4,7 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from playwright.sync_api import sync_playwright
 from playwright.sync_api import expect

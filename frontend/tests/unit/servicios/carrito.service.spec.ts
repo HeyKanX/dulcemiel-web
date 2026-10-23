@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { BehaviorSubject } from 'rxjs';
-import { CarritoService } from './carrito.service';
-import { AuthService } from '../autenticaciones/auth.service';
-import { environment } from '../../environments/environment';
+import { CarritoService } from '../../../src/app/servicios/carrito.service';
+import { AuthService } from '../../../src/app/autenticaciones/auth.service';
+import { environment } from '../../../src/environments/environment';
 
 describe('CarritoService, auditoría de estado', () => {
   let service: CarritoService;
