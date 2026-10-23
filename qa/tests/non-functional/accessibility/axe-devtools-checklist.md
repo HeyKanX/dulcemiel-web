@@ -2,6 +2,8 @@
 
 Realizar la revisión en el entorno local de QA, con datos sintéticos y una corrida identificada. Configurar axe DevTools Extension para WCAG 2.2 nivel AA y registrar el navegador y la versión de la aplicación.
 
+La alternativa automatizada con axe-core para pantallas públicas está en `axe_core_scan.py`. Sus resultados se documentan por corrida en `qa/test-runs/`; mantienen aparte las tareas manuales de teclado, foco, zoom y lector de pantalla.
+
 ## Escaneo por página
 
 1. Abrir una ruta cubierta por los casos de accesibilidad: registro, inicio de sesión, catálogo, detalle, carrito, checkout, seguimiento o panel administrativo.
