@@ -56,6 +56,6 @@ New-Item -ItemType Directory -Force $perf | Out-Null
 py tests/non-functional/accessibility/axe_core_scan.py --base-url https://jolly-smoke-017f42010.5.azurestaticapps.net --output "..\..\Evidencias\accesibilidad\axe-core\$run"
 ```
 
-Repite k6 con los perfiles `baseline` y `moderate`, cambiando el nombre del JSON y el registro de salida para cada perfil. k6 usa las URL locales configuradas; la exploración pública de axe-core recibe expresamente la URL desplegada. El informe Lighthouse se obtiene con Chrome DevTools sobre `/productos` y se conserva como PDF en `Evidencias/auditoria-web/lighthouse/`.
+Repite k6 con los perfiles `baseline` y `moderate`, cambiando el nombre del JSON y el registro de salida para cada perfil. k6 usa las URL locales configuradas; la exploración pública de axe-core recibe expresamente la URL desplegada y guarda resultados exportables en JSON y CSV. Para examinar la interfaz con axe DevTools Extension, abre la página desplegada en el navegador con la extensión instalada, ejecuta el escaneo desde DevTools y conserva una captura del panel en `Evidencias/accesibilidad/axe-devtools-extension/`. El informe Lighthouse se obtiene con Chrome DevTools sobre `/productos` y se conserva como PDF en `Evidencias/auditoria-web/lighthouse/`.
 
 Cada nueva ejecución debe registrar fecha, versión probada, ambiente, resultado y archivos producidos en `Evidencias/registro-ejecuciones.csv`. Los resultados ya obtenidos, sus límites y la relación con los casos se exponen en el informe del proyecto.
