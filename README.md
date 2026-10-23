@@ -123,3 +123,7 @@ npm run build
 - Si cambias imagenes de productos, el backend versiona la URL para evitar cache del navegador.
 - La documentacion ampliada esta en `docs/`.
 - La preparacion y secuencia de despliegue gratuito en Azure esta en `docs/AZURE_DEPLOYMENT.md`.
+
+## Ejecutar las pruebas
+
+Las instrucciones de instalación, preparación de la base aislada y ejecución de cada suite se encuentran en [`qa/README.md`](qa/README.md). El diseño de casos y los resultados se presentan en el informe del proyecto.
