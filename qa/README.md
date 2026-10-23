@@ -93,6 +93,8 @@ La verificación con axe DevTools Extension y las tareas manuales de teclado, fo
 
 La revisión automatizada reproducible con axe-core se ejecuta mediante `tests/non-functional/accessibility/axe_core_scan.py`. La corrida del 23 de octubre de 2026 sobre las pantallas públicas desplegadas y sus límites se documenta en `test-runs/axe-core-2026-10-23.md`. Sus resultados no completan por sí solos las tareas manuales de `manual_review.csv`.
 
+La medición Lighthouse del catálogo desplegado del mismo día está resumida en `test-runs/lighthouse-2026-10-23.md`, con el PDF original en `../../evidencias-criterio5/lighthouse/20261023-publico/`. Su puntuación de accesibilidad y la corrida axe-core se informan como mediciones distintas; ambas señalan el selector de categoría sin nombre accesible.
+
 ## Evidencia y estados
 
 Por corrida, conservar fecha, commit, ambiente, datos sintéticos, salida, capturas, métricas y decisión humana bajo `../../evidencias-criterio5/`. No guardar credenciales ni tokens en Git. Los estados parciales no cuentan como aprobación íntegra del criterio; los casos no ejecutados quedan fuera de los porcentajes de aprobación.
