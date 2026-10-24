@@ -1,102 +1,65 @@
-# Pruebas de calidad de Dulce Miel
+# Ejecución de pruebas de Dulce Miel
 
-Esta carpeta concentra los artefactos de prueba y mantiene separado el código productivo. El código auditado corresponde al commit `9e46844`. Las pruebas del backend Java están en `backend/src/test`, conforme a la estructura Maven; las pruebas unitarias de Angular están en `frontend/tests/unit`.
+Las pruebas están separadas del código de la aplicación en `qa/`, salvo las suites unitarias ubicadas en las rutas habituales de Maven y Angular. El diseño y la trazabilidad de los 41 casos se presentan en el anexo del informe del proyecto. Las salidas se guardan en `../../Evidencias/`, organizadas por tipo de prueba y herramienta.
 
-## Organización
+## Preparación
 
-```text
-qa/
-  test-design/                 Catálogo de casos diseñados
-  test-runs/                   Resultados por corrida
-  tests/
-    functional/
-      api/                     Colección Newman
-      features/                Escenarios Gherkin (palabras clave en inglés, pasos en español)
-        steps/                 Definiciones Behave separadas por funcionalidad
-      pages/                   BasePage y Page Objects Selenium
-      testsupport/             Fábrica y configuración del navegador
-    non-functional/
-      accessibility/           Lista manual para axe DevTools y revisión humana
-      compatibility/           Playwright
-      performance/k6/          Escenario de carga local
-  infra/                       SQL de prueba y arranque aislado
-  utils/                       Exportación, consolidación y reportes
-```
-
-`test-design/cases.csv` describe los casos: base, tipo, nivel, requisito o criterio, precondiciones, datos, pasos y resultado esperado. `test-runs/executions.csv` registra la corrida, el resultado observado, la evidencia y el defecto asociado. Una fila del catálogo no significa que el caso se haya ejecutado.
-
-La guía de términos, la relación con los criterios de la rúbrica y la interpretación del conteo se encuentra en `docs/terminologia-y-rubrica.md`.
-
-El flujo que conecta requisito, criterio, caso diseñado, escenario automatizado, ejecución, evidencia y defecto se documenta en `docs/flujo-de-automatizacion.md`. Sigue los patrones pertinentes de las prácticas disponibles de las semanas 5, 8 y 9, adaptados al entorno y a los tipos de prueba de Dulce Miel.
-
-## Herramientas
-
-El proyecto organiza las comprobaciones con JUnit 5, Mockito, Spring Boot Test, MockMvc, Testcontainers, JaCoCo, Jasmine/Karma, Karma Coverage, Behave/Selenium, Playwright, Postman/Newman, Grafana k6, axe DevTools Extension y axe-core.
-
-JaCoCo se ejecuta en el backend y genera cobertura de las clases Java probadas; Karma Coverage se usa para Angular. Las métricas deben informarse por componente y acompañarse de lectura de los casos límite y del código no cubierto.
-
-## Preparación del entorno local
-
-Desde `qa/`, instalar las dependencias de Node y Python:
+Desde `qa/`:
 
 ```powershell
 npm ci
 py -m pip install -r requirements.txt
 py -m playwright install chromium firefox webkit
+.\infra\bootstrap.ps1
 ```
 
-Ejecutar `./infra/bootstrap.ps1` una vez para crear exclusivamente la base aislada `dulce-miel-qa-c5` en `127.0.0.1:14333`. El script del esquema elimina tablas, por lo que el contenedor de QA no se debe apuntar a la base de trabajo.
+El script de preparación usa la base aislada `dulce-miel-qa-c5` en `127.0.0.1:14333`. Ejecuta `./infra/run-backend.ps1` desde `qa/` y `npm start -- --host 127.0.0.1 --port 4200` desde `frontend/` en otra terminal. Si el backend de QA ya está activo en el puerto 5000, el script lo informa y termina sin iniciar una segunda instancia.
 
-En una terminal de `qa/`, iniciar el backend con `./infra/run-backend.ps1`. En otra terminal, desde `frontend/`, iniciar Angular con `npm start -- --host 127.0.0.1 --port 4200`. Confirmar la disponibilidad de la API local y el catálogo en el navegador.
+## Pruebas funcionales de interfaz con Behave y Selenium
 
-## Ejecución de pruebas
-
-Desde la raíz `qa/`, para Gherkin y Selenium:
+Desde `qa/`:
 
 ```powershell
 $env:QA_ISOLATED_DB = '1'
 $env:QA_RUN_ID = (Get-Date -Format 'yyyyMMdd-HHmmss')
-$env:QA_ARTIFACTS = '..\..\evidencias-criterio5'
-py -m behave tests/functional/features --lang en --junit --junit-directory '..\..\evidencias-criterio5' -f progress
+$env:QA_ARTIFACTS = "..\..\Evidencias\funcionales-ui\behave-selenium\$env:QA_RUN_ID"
+New-Item -ItemType Directory -Force $env:QA_ARTIFACTS | Out-Null
+py -m behave tests/functional/features --lang en --junit --junit-directory $env:QA_ARTIFACTS -f progress 2>&1 | Tee-Object "$env:QA_ARTIFACTS\behave.log"
 ```
 
-Para la colección API y las verificaciones de compatibilidad:
+El navegador se crea y cierra por escenario. Los escenarios `@writes` requieren la base aislada. Las palabras clave de Gherkin están en inglés y el comportamiento se describe en español.
+
+## Pruebas funcionales de API con Newman
 
 ```powershell
-.\node_modules\.bin\newman.cmd run .\tests\functional\api\dulcemiel.postman_collection.json -r cli,junit --reporter-junit-export '..\..\evidencias-criterio5\api-newman.xml'
-py tests/non-functional/compatibility/playwright_compatibility.py
+$e = "..\..\Evidencias\funcionales-api\postman-newman\$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+New-Item -ItemType Directory -Force $e | Out-Null
+.\node_modules\.bin\newman.cmd run .\tests\functional\api\dulcemiel.postman_collection.json -r cli,junit --reporter-junit-export "$e\api-newman.xml" 2>&1 | Tee-Object "$e\api-newman.log"
 ```
 
-Para el perfil local de rendimiento:
+## Pruebas unitarias, integración y cobertura
+
+Detén el backend de QA con `.\infra\stop-backend.ps1` desde `qa/` antes de lanzar `.\mvnw.cmd clean verify` desde `backend/`. En Windows, el proceso mantiene abierto el JAR de `target` e impide que Maven limpie esa carpeta. La suite de integración usa Docker y Testcontainers para SQL Server.
+
+Si las aserciones fallan, conserva los XML de `backend/target/surefire-reports/` y ejecuta `.\mvnw.cmd jacoco:report` desde `backend/` para generar el reporte de cobertura con los datos recogidos antes del fallo. Para volver a usar la aplicación, ejecuta `.\mvnw.cmd package -DskipTests` desde `backend/` y luego `./infra/run-backend.ps1` desde `qa/`.
+
+Desde `frontend/`, ejecuta `npm ci` y `npm run test:coverage`; Karma genera el reporte de cobertura Angular. Conserva los XML y registros de cada corrida.
+
+## Compatibilidad, rendimiento y accesibilidad
+
+Desde `qa/`:
 
 ```powershell
-& 'C:\Program Files\k6\k6.exe' run -e QA_LOAD_PROFILE=smoke -e QA_K6_SUMMARY=..\..\evidencias-criterio5\k6-smoke.json .\tests\non-functional\performance\k6\catalogo.js
+$run = Get-Date -Format 'yyyyMMdd-HHmmss'
+$compat = "..\..\Evidencias\compatibilidad\playwright\$run"
+New-Item -ItemType Directory -Force $compat | Out-Null
+py tests/non-functional/compatibility/playwright_compatibility.py 2>&1 | Tee-Object "$compat\playwright.log"
+$perf = "..\..\Evidencias\rendimiento\k6\$run"
+New-Item -ItemType Directory -Force $perf | Out-Null
+& 'C:\Program Files\k6\k6.exe' run -e QA_LOAD_PROFILE=smoke -e QA_K6_SUMMARY="$perf\k6-smoke.json" .\tests\non-functional\performance\k6\catalogo.js 2>&1 | Tee-Object "$perf\k6-smoke.log"
+py tests/non-functional/accessibility/axe_core_scan.py --base-url https://jolly-smoke-017f42010.5.azurestaticapps.net --output "..\..\Evidencias\accesibilidad\axe-core\$run"
 ```
 
-Los perfiles smoke, baseline y moderate usan solo localhost. Las metas previas son p95 de API ≤ 2000 ms, p95 de página HTTP ≤ 3000 ms y errores < 5 %. La latencia de página mide la respuesta HTTP inicial, no el tiempo de renderizado o interacción.
+Repite k6 con los perfiles `baseline` y `moderate`, cambiando el nombre del JSON y el registro de salida para cada perfil. k6 usa las URL locales configuradas; la exploración pública de axe-core recibe expresamente la URL desplegada y guarda resultados exportables en JSON y CSV. Para examinar la interfaz con axe DevTools Extension, abre la página desplegada en el navegador con la extensión instalada, ejecuta el escaneo desde DevTools y conserva una captura del panel en `Evidencias/accesibilidad/axe-devtools-extension/`. El informe Lighthouse se obtiene con Chrome DevTools sobre `/productos` y se conserva como PDF en `Evidencias/auditoria-web/lighthouse/`.
 
-Para las pruebas unitarias y la cobertura:
-
-```powershell
-# En frontend/
-npm run test:coverage
-
-# En backend/
-.\mvnw.cmd clean verify
-```
-
-JaCoCo deja el informe HTML en `backend/target/site/jacoco/index.html` y datos en formato XML junto al informe. La suite de integración necesita Docker para levantar SQL Server con Testcontainers.
-
-## Accesibilidad
-
-La verificación con axe DevTools Extension y las tareas manuales de teclado, foco, zoom, contraste y lector de pantalla se describen en `tests/non-functional/accessibility/axe-devtools-checklist.md`. Registrar cada resultado y su evidencia en `tests/non-functional/accessibility/manual_review.csv`. Los hallazgos automáticos necesitan revisión humana antes de clasificarse como defectos.
-
-La revisión automatizada reproducible con axe-core se ejecuta mediante `tests/non-functional/accessibility/axe_core_scan.py`. La corrida del 23 de octubre de 2026 sobre las pantallas públicas desplegadas y sus límites se documenta en `test-runs/axe-core-2026-10-23.md`. Sus resultados no completan por sí solos las tareas manuales de `manual_review.csv`.
-
-La medición Lighthouse del catálogo desplegado del mismo día está resumida en `test-runs/lighthouse-2026-10-23.md`, con el PDF original en `../../evidencias-criterio5/lighthouse/20261023-publico/`. Su puntuación de accesibilidad y la corrida axe-core se informan como mediciones distintas; ambas señalan el selector de categoría sin nombre accesible.
-
-## Evidencia y estados
-
-Por corrida, conservar fecha, commit, ambiente, datos sintéticos, salida, capturas, métricas y decisión humana bajo `../../evidencias-criterio5/`. No guardar credenciales ni tokens en Git. Los estados parciales no cuentan como aprobación íntegra del criterio; los casos no ejecutados quedan fuera de los porcentajes de aprobación.
-
-El ciclo de Behave/Selenium inicia un navegador por escenario, comprueba el aislamiento para los escenarios `@writes`, guarda captura y texto de página al terminar, y cierra el navegador. La preparación de datos vía API se usa cuando el escenario requiere una cuenta previamente creada; las acciones de interfaz se verifican en Selenium. Consulta `docs/flujo-de-automatizacion.md` antes de añadir casos para conservar esta separación.
+Cada nueva ejecución debe registrar fecha, versión probada, ambiente, resultado y archivos producidos en `Evidencias/registro-ejecuciones.csv`. Los resultados ya obtenidos, sus límites y la relación con los casos se exponen en el informe del proyecto.
