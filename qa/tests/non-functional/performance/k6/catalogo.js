@@ -10,9 +10,9 @@ for (const value of [api, web]) {
 
 const profile = __ENV.QA_LOAD_PROFILE || 'smoke';
 const profiles = {
-  smoke: { vus: 1, duration: '30s' },
-  baseline: { vus: 3, duration: '2m' },
-  moderate: { vus: 8, duration: '3m' },
+  smoke: { vus: 1000, duration: '30s' }, // 1000 usuarios virtuales durante 30 segundos.
+  baseline: { vus: 500, duration: '2m' }, // 500 usuarios virtuales durante 2 minutos.
+  moderate: { vus: 100, duration: '3m' }, // 100 usuarios virtuales durante 3 minutos.
 };
 if (!profiles[profile]) throw new Error('Perfil desconocido');
 export const options = {
@@ -29,19 +29,34 @@ const pageLatency = new Trend('page_latency', true);
 const errors = new Rate('request_errors');
 
 export default function () {
-  const products = http.get(`${api}/productos`, { tags: { case: 'CNF-REN-02' } });
+  const products = http.get(`${api}/productos`, { tags: { case: 'TC-NF-REN-002' } });
   apiLatency.add(products.timings.duration);
   errors.add(products.status !== 200);
-  check(products, { 'CNF-REN-02 API responde 200': r => r.status === 200 });
+  check(products, { 'TC-NF-REN-002 API responde 200': r => r.status === 200 });
 
-  const page = http.get(`${web}/productos`, { headers: { Accept: 'text/html' }, tags: { case: 'CNF-REN-01' } });
+  const page = http.get(`${web}/productos`, { headers: { Accept: 'text/html' }, tags: { case: 'TC-NF-REN-001' } });
   if (__ENV.QA_DEBUG === '1' && __VU === 1 && __ITER === 0) console.log(`API HTTP ${products.status}; página HTTP ${page.status}`);
   pageLatency.add(page.timings.duration);
   errors.add(page.status !== 200);
-  check(page, { 'CNF-REN-01 página responde 200': r => r.status === 200 });
+  check(page, { 'TC-NF-REN-001 página responde 200': r => r.status === 200 });
   sleep(1);
 }
 
 export function handleSummary(data) {
-  return { [__ENV.QA_K6_SUMMARY || 'artifacts/k6-summary.json']: JSON.stringify(data, null, 2) };
+  const format = value => Number.isFinite(value) ? value.toFixed(2) : 'N/D';
+  const api = data.metrics.api_latency?.values || {};
+  const page = data.metrics.page_latency?.values || {};
+  const errors = data.metrics.request_errors?.values || {};
+  const checks = data.metrics.checks?.values || {};
+  const lines = [
+    '\nResumen de rendimiento k6',
+    `Solicitudes: ${data.metrics.http_reqs?.values?.count ?? 0}`,
+    `API (ms): promedio ${format(api.avg)} | p95 ${format(api['p(95)'])} | máximo ${format(api.max)}`,
+    `Página (ms): promedio ${format(page.avg)} | p95 ${format(page['p(95)'])} | máximo ${format(page.max)}`,
+    `Errores de solicitud: ${format((errors.rate ?? 0) * 100)} %`,
+    `Aserciones aprobadas: ${checks.passes ?? 0}/${(checks.passes ?? 0) + (checks.fails ?? 0)}`,
+  ];
+  const outputs = { stdout: `${lines.join('\n')}\n` };
+  if (__ENV.QA_K6_SUMMARY) outputs[__ENV.QA_K6_SUMMARY] = JSON.stringify(data, null, 2);
+  return outputs;
 }

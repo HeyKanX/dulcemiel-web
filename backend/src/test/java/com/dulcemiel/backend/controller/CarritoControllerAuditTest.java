@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/** Verificaciones unitarias vinculadas parcialmente a TC-F-009, TC-F-010 y TC-F-012. */
 class CarritoControllerAuditTest {
     private JdbcTemplate jdbc;
     private AuthSupport auth;
@@ -46,7 +47,7 @@ class CarritoControllerAuditTest {
         verify(jdbc, never()).update(anyString(), any(Object[].class));
     }
 
-    @Test void acumuladoMayorQueStockDebeRechazarseSinActualizar_CA11() {
+    @Test void acumuladoMayorQueStockDebeRechazarseSinActualizar_TC_F_012() {
         when(jdbc.queryForList(startsWith("SELECT precio"), eq(9))).thenReturn(java.util.List.of(Map.of("precio", BigDecimal.TEN, "stock", 5)));
         when(jdbc.queryForList(startsWith("SELECT id, cantidad"), eq(1), eq(9))).thenReturn(java.util.List.of(Map.of("id", 13, "cantidad", 4)));
         assertEquals(HttpStatus.BAD_REQUEST, controller.add("Bearer cliente", Map.of("producto_id", 9, "cantidad", 2)).getStatusCode());

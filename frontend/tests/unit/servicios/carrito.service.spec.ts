@@ -5,6 +5,7 @@ import { CarritoService } from '../../../src/app/servicios/carrito.service';
 import { AuthService } from '../../../src/app/autenticaciones/auth.service';
 import { environment } from '../../../src/environments/environment';
 
+// Verificaciones unitarias de estado relacionadas con TC-F-009 y TC-F-011.
 describe('CarritoService, auditoría de estado', () => {
   let service: CarritoService;
   let http: HttpTestingController;

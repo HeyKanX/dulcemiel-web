@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Verificaciones de autenticación y permisos relacionadas con TC-F-003, TC-F-004 y TC-F-018. */
 class JwtServiceTest {
     private static final String SECRET = "clave-de-auditoria-criterio-cuatro-2026";
 

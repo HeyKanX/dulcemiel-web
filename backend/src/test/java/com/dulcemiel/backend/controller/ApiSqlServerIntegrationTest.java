@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/** Recorridos de integración vinculados parcialmente a TC-F-001, TC-F-003, TC-F-009, TC-F-012, TC-F-013, TC-F-014 y TC-F-018. */
 @SpringBootTest
 @AutoConfigureMockMvc
 class ApiSqlServerIntegrationTest {
