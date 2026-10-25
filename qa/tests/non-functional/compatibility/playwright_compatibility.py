@@ -1,4 +1,4 @@
-"""Cobertura complementaria RNF04/CA32: motores y ancho móvil, sin repetir los flujos Behave."""
+"""TC-NF-COM-001 / RNF04: catálogo y registro en tres motores y dos anchos."""
 import os
 import sys
 import unittest

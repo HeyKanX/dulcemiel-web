@@ -126,4 +126,11 @@ npm run build
 
 ## Ejecutar las pruebas
 
-Las instrucciones de instalación, preparación de la base aislada y ejecución de cada suite se encuentran en [`qa/README.md`](qa/README.md). El diseño de casos y los resultados se presentan en el informe del proyecto.
+Desde esta carpeta, prepara una vez el entorno y ejecuta todas las suites automatizadas:
+
+```powershell
+.\qa\run-tests.ps1 -Suite setup
+.\qa\run-tests.ps1 -Suite all
+```
+
+Para una prueba individual, por ejemplo compatibilidad, usa `.\qa\run-tests.ps1 -Suite compat`. Antes de las pruebas de interfaz, API, compatibilidad y rendimiento, inicia el backend y el frontend como indica la [guía rápida de pruebas](qa/README.md). El diseño de casos y los resultados están en el informe del proyecto.
