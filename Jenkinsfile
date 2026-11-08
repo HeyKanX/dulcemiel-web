@@ -26,31 +26,32 @@ pipeline {
 
         stage('Backend - pruebas Maven') {
             steps {
-                script {
-                    if (isUnix()) {
-                        dir('backend') { sh './mvnw -B -ntp test' }
-                    } else {
-                        dir('backend') { bat 'mvnw.cmd -B -ntp test' }
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Fallaron las pruebas Maven del backend; se continuará para recopilar los demás resultados.') {
+                    script {
+                        if (isUnix()) {
+                            dir('backend') { sh './mvnw -B -ntp test' }
+                        } else {
+                            dir('backend') { bat 'mvnw.cmd -B -ntp test' }
+                        }
                     }
                 }
-            }
-            post {
-                always { junit testResults: 'backend/target/surefire-reports/TEST-*.xml', allowEmptyResults: true }
             }
         }
 
         stage('Frontend - pruebas unitarias') {
             steps {
-                script {
-                    if (isUnix()) {
-                        dir('frontend') {
-                            sh 'npm ci'
-                            sh 'npm run test:coverage -- --browsers=ChromeHeadless'
-                        }
-                    } else {
-                        dir('frontend') {
-                            bat 'npm ci'
-                            bat 'npm run test:coverage -- --browsers=ChromeHeadless'
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Fallaron las pruebas unitarias del frontend; se continuará con las etapas restantes.') {
+                    script {
+                        if (isUnix()) {
+                            dir('frontend') {
+                                sh 'npm ci'
+                                sh 'npm run test:coverage -- --browsers=ChromeHeadless'
+                            }
+                        } else {
+                            dir('frontend') {
+                                bat 'npm ci'
+                                bat 'npm run test:coverage -- --browsers=ChromeHeadless'
+                            }
                         }
                     }
                 }
@@ -59,11 +60,13 @@ pipeline {
 
         stage('Frontend - compilación') {
             steps {
-                script {
-                    if (isUnix()) {
-                        dir('frontend') { sh 'npm run build' }
-                    } else {
-                        dir('frontend') { bat 'npm run build' }
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Falló la compilación del frontend; se continuará con la validación de resultados.') {
+                    script {
+                        if (isUnix()) {
+                            dir('frontend') { sh 'npm run build' }
+                        } else {
+                            dir('frontend') { bat 'npm run build' }
+                        }
                     }
                 }
             }
@@ -71,22 +74,26 @@ pipeline {
 
         stage('Validar resumen TestLink') {
             when {
-                expression { fileExists('qa/testlink/results/current-run.json') }
+                expression { fileExists('qa/testlink/results/current-run.json') || params.PUBLICAR_RESULTADOS_TESTLINK }
             }
             steps {
                 script {
+                    if (!fileExists('qa/testlink/results/current-run.json')) {
+                        error('No hay resumen de esta corrida; no se publicará nada en TestLink.')
+                    }
                     if (isUnix()) {
                         sh 'python3 qa/testlink/publish_results.py --results qa/testlink/results/current-run.json'
                     } else {
                         bat 'py qa\\testlink\\publish_results.py --results qa\\testlink\\results\\current-run.json'
                     }
+                    env.TESTLINK_SUMMARY_VALID = 'true'
                 }
             }
         }
 
         stage('Publicar resultados en TestLink') {
             when {
-                expression { params.PUBLICAR_RESULTADOS_TESTLINK }
+                expression { params.PUBLICAR_RESULTADOS_TESTLINK && env.TESTLINK_SUMMARY_VALID == 'true' }
             }
             steps {
                 script {
