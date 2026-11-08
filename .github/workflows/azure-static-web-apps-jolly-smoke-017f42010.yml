@@ -1,19 +1,23 @@
-name: Azure Static Web Apps CI/CD
+name: Azure Static Web Apps - Manual Production Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      confirm_production_deploy:
+        description: Confirmar publicación manual en producción desde main
+        required: true
+        type: boolean
+        default: false
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
     branches:
       - main
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirm_production_deploy == true
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Confirmed Production Deployment
     permissions:
        id-token: write
        contents: read

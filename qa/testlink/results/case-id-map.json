@@ -1,0 +1,350 @@
+{
+  "project": "Dulce Miel",
+  "plan": "Plan de pruebas - Dulce Miel",
+  "suite": "Casos de prueba - Dulce Miel",
+  "cases": [
+    {
+      "case_id": "TC-F-001",
+      "testcaseid": 4,
+      "testcaseexternalid": "DM-1",
+      "version": 1,
+      "name": "TC-F-001 - TC-F-001 — Registrar una cuenta nueva"
+    },
+    {
+      "case_id": "TC-F-002",
+      "testcaseid": 9,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-002 - TC-F-002 — Rechazar correo duplicado"
+    },
+    {
+      "case_id": "TC-F-003",
+      "testcaseid": 14,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-003 - TC-F-003 — Iniciar sesión con usuario activo"
+    },
+    {
+      "case_id": "TC-F-004",
+      "testcaseid": 20,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-004 - TC-F-004 — Rechazar credenciales incorrectas"
+    },
+    {
+      "case_id": "TC-F-005",
+      "testcaseid": 25,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-005 - TC-F-005 — Mostrar catálogo con datos esenciales"
+    },
+    {
+      "case_id": "TC-F-006",
+      "testcaseid": 30,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-006 - TC-F-006 — Identificar productos no disponibles"
+    },
+    {
+      "case_id": "TC-F-007",
+      "testcaseid": 35,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-007 - TC-F-007 — Mostrar detalle de producto"
+    },
+    {
+      "case_id": "TC-F-008",
+      "testcaseid": 40,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-008 - TC-F-008 — Informar producto inexistente"
+    },
+    {
+      "case_id": "TC-F-009",
+      "testcaseid": 44,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-009 - TC-F-009 — Agregar producto al carrito"
+    },
+    {
+      "case_id": "TC-F-010",
+      "testcaseid": 50,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-010 - TC-F-010 — Rechazar cantidad cero"
+    },
+    {
+      "case_id": "TC-F-011",
+      "testcaseid": 54,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-011 - TC-F-011 — Actualizar y quitar producto del carrito"
+    },
+    {
+      "case_id": "TC-F-012",
+      "testcaseid": 60,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-012 - TC-F-012 — Rechazar cantidad mayor al stock"
+    },
+    {
+      "case_id": "TC-F-013",
+      "testcaseid": 65,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-013 - TC-F-013 — Crear y confirmar pedido"
+    },
+    {
+      "case_id": "TC-F-014",
+      "testcaseid": 72,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-014 - TC-F-014 — Impedir pedido vacío o incompleto"
+    },
+    {
+      "case_id": "TC-F-015",
+      "testcaseid": 78,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-015 - TC-F-015 — Listar solo pedidos del cliente"
+    },
+    {
+      "case_id": "TC-F-016",
+      "testcaseid": 82,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-016 - TC-F-016 — Consultar detalle de pedido propio"
+    },
+    {
+      "case_id": "TC-F-017",
+      "testcaseid": 86,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-017 - TC-F-017 — Crear o actualizar producto como administrador"
+    },
+    {
+      "case_id": "TC-F-018",
+      "testcaseid": 92,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-018 - TC-F-018 — Denegar administración al cliente"
+    },
+    {
+      "case_id": "TC-F-019",
+      "testcaseid": 97,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-019 - TC-F-019 — Actualizar pedido con estado permitido"
+    },
+    {
+      "case_id": "TC-F-020",
+      "testcaseid": 103,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-020 - TC-F-020 — Rechazar estado inválido o pedido inexistente"
+    },
+    {
+      "case_id": "TC-NF-ACC-001",
+      "testcaseid": 108,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-001 - TC-NF-ACC-001 — Completar registro solo con teclado"
+    },
+    {
+      "case_id": "TC-NF-ACC-002",
+      "testcaseid": 112,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-002 - TC-NF-ACC-002 — Etiquetar campos y errores de registro"
+    },
+    {
+      "case_id": "TC-NF-ACC-003",
+      "testcaseid": 117,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-003 - TC-NF-ACC-003 — Usar inicio de sesión con tecnología asistiva"
+    },
+    {
+      "case_id": "TC-NF-ACC-004",
+      "testcaseid": 122,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-004 - TC-NF-ACC-004 — Describir imágenes y controles del catálogo"
+    },
+    {
+      "case_id": "TC-NF-ACC-005",
+      "testcaseid": 126,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-005 - TC-NF-ACC-005 — Comunicar estados sin depender del color"
+    },
+    {
+      "case_id": "TC-NF-ACC-006",
+      "testcaseid": 130,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-006 - TC-NF-ACC-006 — Recorrer detalle y acciones con teclado"
+    },
+    {
+      "case_id": "TC-NF-ACC-007",
+      "testcaseid": 134,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-007 - TC-NF-ACC-007 — Operar carrito con teclado"
+    },
+    {
+      "case_id": "TC-NF-ACC-008",
+      "testcaseid": 138,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-008 - TC-NF-ACC-008 — Anunciar cambios del carrito"
+    },
+    {
+      "case_id": "TC-NF-ACC-009",
+      "testcaseid": 143,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-009 - TC-NF-ACC-009 — Identificar campos y errores del pedido"
+    },
+    {
+      "case_id": "TC-NF-ACC-010",
+      "testcaseid": 148,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-010 - TC-NF-ACC-010 — Completar compra sin bloqueos de teclado"
+    },
+    {
+      "case_id": "TC-NF-ACC-011",
+      "testcaseid": 152,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-011 - TC-NF-ACC-011 — Recorrer seguimiento de pedidos con lector"
+    },
+    {
+      "case_id": "TC-NF-ACC-012",
+      "testcaseid": 156,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-012 - TC-NF-ACC-012 — Operar administración con teclado"
+    },
+    {
+      "case_id": "TC-NF-ACC-013",
+      "testcaseid": 160,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-013 - TC-NF-ACC-013 — Mantener uso con zoom al 200 %"
+    },
+    {
+      "case_id": "TC-NF-ACC-014",
+      "testcaseid": 165,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-014 - TC-NF-ACC-014 — Verificar contraste WCAG AA"
+    },
+    {
+      "case_id": "TC-NF-ACC-015",
+      "testcaseid": 169,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-ACC-015 - TC-NF-ACC-015 — Mantener navegación y controles consistentes"
+    },
+    {
+      "case_id": "TC-NF-REN-001",
+      "testcaseid": 173,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-REN-001 - TC-NF-REN-001 — Medir rendimiento de página de productos"
+    },
+    {
+      "case_id": "TC-NF-REN-002",
+      "testcaseid": 177,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-REN-002 - TC-NF-REN-002 — Medir rendimiento de API de productos"
+    },
+    {
+      "case_id": "TC-NF-COM-001",
+      "testcaseid": 181,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-COM-001 - TC-NF-COM-001 — Verificar compatibilidad y ancho adaptable"
+    },
+    {
+      "case_id": "TC-NF-SEG-001",
+      "testcaseid": 185,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-SEG-001 - TC-NF-SEG-001 — Bloquear creación de productos al cliente"
+    },
+    {
+      "case_id": "TC-NF-INT-001",
+      "testcaseid": 190,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-INT-001 - TC-NF-INT-001 — No persistir pedido inválido"
+    },
+    {
+      "case_id": "TC-NF-INT-002",
+      "testcaseid": 195,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-INT-002 - TC-NF-INT-002 — Conservar sesión y catálogo tras recarga"
+    },
+    {
+      "case_id": "TC-F-021",
+      "testcaseid": 200,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-021 - TC-F-021 — Rechazar cantidad negativa sin alterar el carrito"
+    },
+    {
+      "case_id": "TC-F-022",
+      "testcaseid": 205,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-022 - TC-F-022 — Rechazar cantidad fraccionaria o fuera de rango"
+    },
+    {
+      "case_id": "TC-F-023",
+      "testcaseid": 210,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-023 - TC-F-023 — Evitar sobreventa en compras concurrentes"
+    },
+    {
+      "case_id": "TC-F-024",
+      "testcaseid": 215,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-024 - TC-F-024 — Rechazar valores numéricos inválidos al crear producto"
+    },
+    {
+      "case_id": "TC-NF-REN-003",
+      "testcaseid": 220,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-REN-003 - TC-NF-REN-003 — Estrés progresivo y recuperación"
+    },
+    {
+      "case_id": "TC-NF-REN-004",
+      "testcaseid": 225,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-REN-004 - TC-NF-REN-004 — Pico repentino y recuperación"
+    },
+    {
+      "case_id": "TC-NF-REN-005",
+      "testcaseid": 230,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-NF-REN-005 - TC-NF-REN-005 — Estabilidad sostenida de 10 minutos"
+    },
+    {
+      "case_id": "TC-F-025",
+      "testcaseid": 235,
+      "testcaseexternalid": "",
+      "version": 1,
+      "name": "TC-F-025 - Rechazar contraseñas distintas al registrar usuario"
+    }
+  ]
+}
