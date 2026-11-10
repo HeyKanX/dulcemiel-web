@@ -2,7 +2,7 @@
 
 **Proyecto:** Dulce Miel  
 **Estado de referencia:** 10 de noviembre de 2026  
-**Commit vigente en `main`:** `dcda046`
+**Commit vigente en `main`:** `4d5c4e3`
 
 ## Qué ya está hecho
 
@@ -14,6 +14,7 @@
 - Azure no se despliega al ejecutar este job de Jenkins.
 - El build #5 confirmó que la publicación a TestLink funciona: se enviaron seis resultados generados por esa corrida (cinco aprobados y uno no aprobado).
 - En el build #6, Jenkins ya reutilizó correctamente Chromium, Firefox y WebKit. La preparación del stack falló porque Maven se ejecutó desde la raíz del repositorio en vez de hacerlo desde `backend`; el preparador ya quedó corregido para entrar a esa carpeta.
+- La corrección del preparador quedó subida a `main` en `4d5c4e3`. El siguiente paso es iniciar una nueva corrida para confirmar que el stack arranque y que se ejecuten las suites dependientes.
 
 ## 1. Iniciar sesión en Jenkins
 
