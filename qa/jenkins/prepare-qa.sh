@@ -46,7 +46,7 @@ cleanup_on_error() {
 }
 trap cleanup_on_error EXIT
 
-bash backend/mvnw -B -ntp -DskipTests package
+(cd backend && bash ./mvnw -B -ntp -DskipTests package)
 docker compose --project-name "$project" --env-file "$env_path" -f compose.qa.yaml up -d --wait --wait-timeout 240 sql
 docker compose --project-name "$project" --env-file "$env_path" -f compose.qa.yaml run --rm init
 docker compose --project-name "$project" --env-file "$env_path" -f compose.qa.yaml up -d --build backend frontend
