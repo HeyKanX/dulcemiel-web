@@ -1,0 +1,25 @@
+FROM jenkins-aula:local
+
+USER root
+RUN if [ -f /etc/apt/sources.list ]; then sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list; fi \
+    && find /etc/apt/sources.list.d -type f \( -name '*.list' -o -name '*.sources' \) -exec sed -i 's|http://deb.debian.org|https://deb.debian.org|g' {} + \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+    && chmod a+r /etc/apt/keyrings/docker.asc \
+    && . /etc/os-release \
+    && printf 'Types: deb\nURIs: https://download.docker.com/linux/debian\nSuites: %s\nComponents: stable\nArchitectures: %s\nSigned-By: /etc/apt/keyrings/docker.asc\n' "$VERSION_CODENAME" "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/docker.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+RUN npm install --global playwright@1.58.0 \
+    && playwright install --with-deps chromium firefox webkit \
+    && npm uninstall --global playwright \
+    && chmod -R a+rX /opt/ms-playwright \
+    && usermod -aG root jenkins
+
+USER jenkins

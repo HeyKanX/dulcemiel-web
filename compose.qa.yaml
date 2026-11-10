@@ -1,6 +1,7 @@
 services:
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    networks: [qa]
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${QA_SQL_PASSWORD}
@@ -12,19 +13,19 @@ services:
       start_period: 20s
 
   init:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    build:
+      context: .
+      dockerfile: qa/infra/Dockerfile.init
     entrypoint: ["/bin/bash", "-lc"]
     command: >-
       /opt/mssql-tools18/bin/sqlcmd -S sql -U sa -P "$${MSSQL_SA_PASSWORD}" -C -b -i /init/schema.sql &&
       /opt/mssql-tools18/bin/sqlcmd -S sql -U sa -P "$${MSSQL_SA_PASSWORD}" -C -b -i /init/seed.sql
     environment:
       MSSQL_SA_PASSWORD: ${QA_SQL_PASSWORD}
-    volumes:
-      - ./backend/database/schema.sql:/init/schema.sql:ro
-      - ./qa/infra/seed.sql:/init/seed.sql:ro
     depends_on:
       sql:
         condition: service_healthy
+    networks: [qa]
 
   backend:
     build:
@@ -37,14 +38,19 @@ services:
       DB_PASSWORD: ${QA_SQL_PASSWORD}
       JWT_SECRET: ${QA_JWT_SECRET}
       FRONTEND_URL: ${QA_WEB_URL}
-    ports:
-      - "127.0.0.1:${QA_API_PORT}:5000"
+    networks: [qa]
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile.qa
-    ports:
-      - "127.0.0.1:${QA_WEB_PORT}:4200"
+      args:
+        QA_API_URL: ${QA_API_URL}
     depends_on:
       - backend
+    networks: [qa]
+
+networks:
+  qa:
+    external: true
+    name: ${QA_DOCKER_NETWORK:-jenkins_default}

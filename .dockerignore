@@ -1,0 +1,16 @@
+.git
+**/node_modules
+frontend/node_modules
+frontend/.angular
+qa/node_modules
+**/.venv
+qa/.local
+qa/artifacts
+frontend/coverage
+frontend/dist
+backend/target/classes
+backend/target/test-classes
+backend/target/generated-sources
+backend/target/generated-test-sources
+backend/target/maven-status
+backend/target/surefire-reports

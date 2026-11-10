@@ -1,0 +1,5 @@
+FROM mcr.microsoft.com/mssql/server:2022-latest
+
+USER root
+COPY backend/database/schema.sql /init/schema.sql
+COPY qa/infra/seed.sql /init/seed.sql

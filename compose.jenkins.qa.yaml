@@ -1,0 +1,33 @@
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: qa/jenkins/Dockerfile.controller
+    image: dulcemiel-jenkins:local
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TESTLINK_URL: http://testlink-app-1/lib/api/xmlrpc/v1/xmlrpc.php
+    group_add:
+      - "0"
+    networks:
+      - jenkins
+      - testlink
+
+volumes:
+  jenkins_home:
+    external: true
+    name: jenkins_jenkins_home
+
+networks:
+  jenkins:
+    external: true
+    name: jenkins_default
+  testlink:
+    external: true
+    name: testlink

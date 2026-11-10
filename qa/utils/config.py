@@ -6,8 +6,9 @@ from urllib.parse import urlparse
 def local_url(name: str, default: str) -> str:
     value = os.getenv(name, default).rstrip("/")
     parsed = urlparse(value)
-    if parsed.scheme not in ("http", "https") or parsed.hostname not in ("localhost", "127.0.0.1"):
-        raise RuntimeError(f"{name} debe apuntar a localhost o 127.0.0.1")
+    allowed_hosts = ("localhost", "127.0.0.1", "backend", "frontend")
+    if parsed.scheme != "http" or parsed.hostname not in allowed_hosts:
+        raise RuntimeError(f"{name} debe apuntar a localhost o al servicio interno backend/frontend de QA")
     return value
 
 

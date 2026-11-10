@@ -5,7 +5,7 @@ import { Trend, Rate } from 'k6/metrics';
 const api = __ENV.QA_API_URL || 'http://127.0.0.1:5000/api';
 const web = __ENV.QA_WEB_URL || 'http://127.0.0.1:4200';
 for (const value of [api, web]) {
-  if (!/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?(\/|$)/.test(value)) throw new Error('k6 solo puede apuntar al entorno local');
+  if (!/^http:\/\/(127\.0\.0\.1|localhost|backend|frontend)(:\d+)?(\/|$)/.test(value)) throw new Error('k6 solo puede apuntar al entorno local o a servicios internos de QA');
 }
 
 const profile = __ENV.QA_LOAD_PROFILE || 'smoke';
