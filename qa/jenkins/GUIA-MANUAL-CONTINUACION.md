@@ -12,6 +12,7 @@
 - Jenkins se reinició con la imagen de QA y conserva sus trabajos e historial en el volumen persistente.
 - Cada ejecución genera un resumen nuevo para TestLink. El resumen incluye solo casos automatizados con evidencia de esa ejecución; no convierte casos manuales ni resultados históricos en resultados actuales.
 - Azure no se despliega al ejecutar este job de Jenkins.
+- El build #5 confirmó que la publicación a TestLink funciona: se enviaron seis resultados generados por esa corrida (cinco aprobados y uno no aprobado).
 
 ## 1. Iniciar sesión en Jenkins
 
@@ -52,6 +53,10 @@ Abre el log de la etapa fallida para distinguir entre:
 - **Falla de infraestructura:** faltan Docker, dependencias, navegador o conectividad, o una suite no pudo arrancar. Registra el mensaje y revisa la etapa de preparación antes de interpretar el resultado como defecto funcional.
 
 El build #4 anterior falló por problemas del agente Linux (wrapper Maven sin permiso de ejecución, ChromeHeadless sin ruta configurada y uso del paso `bat` de Windows). La configuración subida en `dcda046` atiende esas causas; falta confirmar el resultado ejecutando un build nuevo.
+
+En el build #5, Maven sí ejecutó 21 pruebas: 20 pasaron y falló `CarritoControllerAuditTest.cantidadCeroDebeRechazarseAntesDeEscribir`; esperaba `400 BAD_REQUEST` y recibió `201 CREATED`. El build también falló al instalar las dependencias QA porque Playwright quiso crear un directorio de bloqueo en `/opt/ms-playwright`, que es de solo lectura para `jenkins`. Los navegadores ya están incluidos en la imagen del controlador; el instalador se ajustó para comprobarlos y reutilizarlos, sin intentar descargarlos de nuevo. Como la preparación de QA no pasó, Newman, Behave/Selenium, Playwright, axe-core y K6 quedaron omitidas en ese build.
+
+El aviso `No test report files were found` correspondía a los reportes JUnit de las suites QA omitidas, no a los reportes Maven, que sí fueron archivados. Se ajustó el post-proceso para que avise con claridad y no muestre ese mensaje genérico cuando no hubo XML de QA. El aviso `[Checks API] No suitable checks publisher found` es informativo: Jenkins no tiene un publicador de checks conectado; no es la causa del fallo de Maven ni de preparación.
 
 Como antecedente separado, el build #3 reportó 20 de 21 pruebas Maven aprobadas y un fallo funcional: al intentar agregar cantidad cero, el sistema respondió `201` cuando se esperaba `400`. Si vuelve a aparecer, déjalo visible como defecto del backend; no se modifica código de aplicación como parte de esta ejecución de QA.
 

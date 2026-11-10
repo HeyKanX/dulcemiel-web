@@ -211,7 +211,13 @@ pipeline {
     post {
         always {
             junit testResults: 'backend/target/surefire-reports/TEST-*.xml', allowEmptyResults: true
-            junit testResults: 'qa/artifacts/**/*.xml', allowEmptyResults: true
+            script {
+                if (sh(returnStatus: true, script: 'find qa/artifacts -type f -name "*.xml" -print -quit 2>/dev/null | grep -q .') == 0) {
+                    junit testResults: 'qa/artifacts/**/*.xml', allowEmptyResults: true
+                } else {
+                    echo 'No se generaron reportes JUnit de QA en esta corrida; revisa si la preparación del entorno fue omitida o falló.'
+                }
+            }
             archiveArtifacts artifacts: 'backend/target/surefire-reports/**,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
             sh 'if [ -f qa/.local/jenkins-run.json ]; then bash qa/jenkins/cleanup-qa.sh; fi'
         }
