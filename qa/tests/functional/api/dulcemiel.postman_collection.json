@@ -205,7 +205,7 @@
       ]
     },
     {
-      "name": "TC-F-018 / CA17 cliente no puede crear producto",
+      "name": "TC-NF-SEG-001 / CNF-SEG-01 cliente no puede crear producto",
       "request": {
         "method": "POST",
         "url": "{{baseUrl}}/productos",
@@ -242,14 +242,14 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('CA17 deniega operación', () => pm.response.to.have.status(403));"
+              "pm.test('CNF-SEG-01 deniega operación', () => pm.response.to.have.status(403));"
             ]
           }
         }
       ]
     },
     {
-      "name": "TC-F-018 / CA17 producto rechazado no se publica",
+      "name": "TC-NF-SEG-001 / CNF-SEG-01 producto rechazado no se publica",
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/productos"
@@ -260,7 +260,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('CA17 sin cambio en catálogo', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.some(x => x.nombre === 'No autorizado')).to.eql(false); });"
+              "pm.test('CNF-SEG-01 sin cambio en catálogo', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.some(x => x.nombre === 'No autorizado')).to.eql(false); });"
             ]
           }
         }
@@ -678,7 +678,7 @@
       ]
     },
     {
-      "name": "TC-F-019 / CA18 iniciar administrador QA",
+      "name": "TC-F-017 / CA16 iniciar administrador QA",
       "request": {
         "method": "POST",
         "url": "{{baseUrl}}/auth/login",

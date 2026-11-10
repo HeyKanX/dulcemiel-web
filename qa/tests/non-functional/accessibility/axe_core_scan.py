@@ -71,6 +71,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", required=True, help="Origen HTTP(S) que se revisará")
     parser.add_argument("--output", type=Path, required=True, help="Carpeta de evidencia de la corrida")
+    parser.add_argument(
+        "--fail-on-violations", action="store_true",
+        help="Devuelve código distinto de cero si hay violaciones WCAG o errores de navegación.",
+    )
     args = parser.parse_args()
     if urlparse(args.base_url).scheme not in ("http", "https"):
         parser.error("--base-url debe comenzar por http:// o https://")
@@ -126,6 +130,12 @@ def main():
             "error": record.get("error"),
         }, ensure_ascii=False))
     print(f"Evidencia: {output_dir}")
+    if args.fail_on_violations and any(
+        record.get("error") or record.get("axe", {}).get("violations")
+        for record in records
+    ):
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

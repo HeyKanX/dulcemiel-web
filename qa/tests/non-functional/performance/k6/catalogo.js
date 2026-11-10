@@ -13,6 +13,34 @@ const profiles = {
   smoke: { vus: 1, duration: '30s' },
   baseline: { vus: 3, duration: '2m' },
   moderate: { vus: 8, duration: '3m' },
+  stress: {
+    scenarios: {
+      progressive_stress: {
+        executor: 'ramping-vus', startVUs: 0,
+        stages: [
+          { duration: '1m', target: 100 },
+          { duration: '1m', target: 300 },
+          { duration: '1m', target: 600 },
+          { duration: '1m', target: 0 },
+        ],
+        gracefulRampDown: '30s',
+      },
+    },
+  },
+  spike: {
+    scenarios: {
+      sudden_spike: {
+        executor: 'ramping-vus', startVUs: 0,
+        stages: [
+          { duration: '10s', target: 1000 },
+          { duration: '30s', target: 1000 },
+          { duration: '10s', target: 0 },
+        ],
+        gracefulRampDown: '10s',
+      },
+    },
+  },
+  sustained: { vus: 100, duration: '10m' },
 };
 if (!profiles[profile]) throw new Error('Perfil desconocido');
 export const options = {
@@ -21,22 +49,28 @@ export const options = {
   thresholds: {
     api_latency: ['p(95)<2000'],
     page_latency: ['p(95)<3000'],
+    api_errors: ['rate<0.05'],
+    page_errors: ['rate<0.05'],
     request_errors: ['rate<0.05'],
   },
 };
 const apiLatency = new Trend('api_latency', true);
 const pageLatency = new Trend('page_latency', true);
+const apiErrors = new Rate('api_errors');
+const pageErrors = new Rate('page_errors');
 const errors = new Rate('request_errors');
 
 export default function () {
-  const products = http.get(`${api}/productos`, { tags: { case: 'CNF-REN-02' } });
+  const products = http.get(`${api}/productos`, { tags: { case: 'TC-NF-REN-002' } });
   apiLatency.add(products.timings.duration);
+  apiErrors.add(products.status !== 200);
   errors.add(products.status !== 200);
   check(products, { 'CNF-REN-02 API responde 200': r => r.status === 200 });
 
-  const page = http.get(`${web}/productos`, { headers: { Accept: 'text/html' }, tags: { case: 'CNF-REN-01' } });
+  const page = http.get(`${web}/productos`, { headers: { Accept: 'text/html' }, tags: { case: 'TC-NF-REN-001' } });
   if (__ENV.QA_DEBUG === '1' && __VU === 1 && __ITER === 0) console.log(`API HTTP ${products.status}; página HTTP ${page.status}`);
   pageLatency.add(page.timings.duration);
+  pageErrors.add(page.status !== 200);
   errors.add(page.status !== 200);
   check(page, { 'CNF-REN-01 página responde 200': r => r.status === 200 });
   sleep(1);
