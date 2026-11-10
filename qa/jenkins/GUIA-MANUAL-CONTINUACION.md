@@ -2,7 +2,7 @@
 
 **Proyecto:** Dulce Miel  
 **Estado de referencia:** 10 de noviembre de 2026  
-**Commit vigente en `main`:** `4d5c4e3`
+**Rama de referencia:** `main`
 
 ## Qué ya está hecho
 
@@ -15,6 +15,8 @@
 - El build #5 confirmó que la publicación a TestLink funciona: se enviaron seis resultados generados por esa corrida (cinco aprobados y uno no aprobado).
 - En el build #6, Jenkins ya reutilizó correctamente Chromium, Firefox y WebKit. La preparación del stack falló porque Maven se ejecutó desde la raíz del repositorio en vez de hacerlo desde `backend`; el preparador ya quedó corregido para entrar a esa carpeta.
 - La corrección del preparador quedó subida a `main` en `4d5c4e3`. El siguiente paso es iniciar una nueva corrida para confirmar que el stack arranque y que se ejecuten las suites dependientes.
+- El build #7 confirmó que Maven pudo empaquetar desde `backend`, pero el contenedor `init` agotó el tiempo al conectarse a SQL Server por TCP; por eso no se preparó el stack y las suites de QA/K6 quedaron omitidas. Se actualizó el inicializador para usar `tcp:sql,1433` y reintentar la conexión hasta 30 veces antes de fallar.
+- En el build #7, TestLink volvió a recibir seis resultados de Maven (cinco aprobados y uno no aprobado); no hubo resultados de K6 porque esa etapa fue omitida. Se dejó configurado el nuevo reintento de conexión y `docker compose config` valida el archivo; falta comprobarlo en una corrida Jenkins.
 
 ## 1. Iniciar sesión en Jenkins
 
