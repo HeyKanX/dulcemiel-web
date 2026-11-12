@@ -224,7 +224,7 @@ pipeline {
                     env.CI_OUTCOME_TESTLINK_PUBLICATION = 'skipped'
                 }
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'No se pudo generar el informe de métricas de esta corrida.') {
-                    sh 'python3 qa/metrics/generate_quality_report.py'
+                    sh 'python3 qa/metrics/generate_quality_report.py --output-dir "qa/metrics/reports/$CI_RUN_ID"'
                 }
             }
             junit testResults: 'backend/target/surefire-reports/TEST-*.xml', allowEmptyResults: true
@@ -235,7 +235,7 @@ pipeline {
                     echo 'No se generaron reportes JUnit de QA en esta corrida; revisa si la preparación del entorno fue omitida o falló.'
                 }
             }
-            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/metrics/reports/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
             sh 'if [ -f qa/.local/jenkins-run.json ]; then bash qa/jenkins/cleanup-qa.sh; fi'
         }
     }

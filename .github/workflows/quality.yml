@@ -211,7 +211,7 @@ jobs:
           CI_OUTCOME_K6_SPIKE: ${{ steps.k6_spike.outcome }}
           CI_OUTCOME_K6_SUSTAINED: ${{ steps.k6_sustained.outcome }}
           CI_OUTCOME_TESTLINK_PUBLICATION: ${{ steps.publish_testlink.outcome }}
-        run: python3 qa/metrics/generate_quality_report.py
+        run: python3 qa/metrics/generate_quality_report.py --output-dir "qa/metrics/reports/${CI_RUN_ID}"
 
       - name: Quality Gate
         if: ${{ always() }}
@@ -272,6 +272,7 @@ jobs:
             frontend/coverage/**
             frontend/dist/**
             qa/artifacts/**
+            qa/metrics/reports/**
             qa/testlink/results/current-run.json
             qa/testlink/results/publication-report.json
 

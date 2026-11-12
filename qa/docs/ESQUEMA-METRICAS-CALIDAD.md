@@ -9,7 +9,7 @@ Cada build debe conservar un resumen legible y uno procesable:
 
 - `quality-summary.json`: fuente consolidada con identificador del build, commit, rama, fecha, ambiente y resultados de las suites.
 - `quality-report.html`: resumen y tendencias para revisión del equipo.
-- Ambos archivos se generan en `qa/artifacts/<runId>/metrics/` y se adjuntan al build como artefactos. En GitHub Actions se descargan desde el artefacto `dulce-miel-quality-<run>-<intento>`; en Jenkins aparecen en los artefactos del build.
+- Ambos archivos se generan en `qa/metrics/reports/<runId>/` y se adjuntan al build como artefactos. En GitHub Actions se descargan desde el artefacto `dulce-miel-quality-<run>-<intento>`; en Jenkins aparecen en los artefactos del build.
 - Informes originales JUnit, cobertura, análisis estático, K6 y TestLink: evidencia adjunta al mismo build, sin sobrescribir la de otras corridas.
 - Exportación Excel/PDF: evidencia de entrega bajo demanda; no sustituye los reportes originales ni TestLink.
 

@@ -29,6 +29,7 @@ yarn-error.log*
 # Ephemeral QA run state and generated reports (archived by Jenkins/GitHub Actions)
 qa/.local/
 qa/artifacts/
+qa/metrics/reports/
 qa/testlink/results/current-run.json
 qa/testlink/results/publication-report.json
 
