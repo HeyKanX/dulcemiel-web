@@ -48,11 +48,19 @@ case "$suite" in
     "$python" ./tests/non-functional/compatibility/playwright_compatibility.py 2>&1 | tee "$out/playwright.log"
     status=${PIPESTATUS[0]}
     set -e
-    python3 - "$status" "$out/result.json" <<'PY'
-import json, sys
-code, path = int(sys.argv[1]), sys.argv[2]
+    python3 - "$status" "$out/playwright.log" "$out/result.json" <<'PY'
+import json, re, sys
+code, log_path, path = int(sys.argv[1]), sys.argv[2], sys.argv[3]
+try:
+    text = open(log_path, encoding='utf-8', errors='replace').read()
+except OSError:
+    text = ''
+results = re.findall(r"\(engine='[^']+',\s*width=\d+\)\s+\.\.\.\s+(ok|FAIL|ERROR)", text)
+total = len(results) or 1
+failed = sum(result != 'ok' for result in results) if results else (1 if code else 0)
 with open(path, 'w', encoding='utf-8') as stream:
     json.dump({'case_id':'TC-NF-COM-001','tool':'Playwright','status':'p' if code == 0 else 'f',
+               'tests_total':total,'tests_passed':total-failed,'tests_failed':failed,
                'detail':f'Prueba de compatibilidad ejecutada; código de salida {code}.',
                'evidence':'compatibility/playwright.log'}, stream, ensure_ascii=False, indent=2)
 PY

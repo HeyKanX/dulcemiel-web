@@ -32,7 +32,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Fallaron las pruebas Maven; se continuará con las demás suites.') {
                     withEnv(['TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal']) {
-                        dir('backend') { sh 'bash ./mvnw -B -ntp test' }
+                        sh 'bash qa/jenkins/run-backend-tests.sh'
                     }
                 }
             }
@@ -42,8 +42,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Fallaron las pruebas unitarias del frontend; se continuará con las demás suites.') {
                     dir('frontend') {
-                        sh 'npm ci'
-                        sh 'CHROME_BIN="$WORKSPACE/qa/jenkins/chrome-headless" npm run test:coverage -- --browsers=ChromeHeadless'
+                        sh 'bash ../qa/jenkins/run-frontend-tests.sh'
                     }
                 }
             }
@@ -210,6 +209,24 @@ pipeline {
 
     post {
         always {
+            script {
+                env.CI_PROVIDER = 'Jenkins'
+                env.CI_RUN_ID = env.BUILD_TAG ?: "${env.JOB_NAME}-${env.BUILD_NUMBER}"
+                env.CI_RUN_URL = env.BUILD_URL ?: ''
+                env.CI_COMMIT = env.GIT_COMMIT ?: ''
+                env.CI_BRANCH = env.GIT_BRANCH ?: ''
+                env.CI_BUILD_RESULT = currentBuild.currentResult ?: 'UNKNOWN'
+                if (params.PUBLICAR_RESULTADOS_TESTLINK && fileExists('qa/testlink/results/publication-report.json')) {
+                    env.CI_OUTCOME_TESTLINK_PUBLICATION = 'success'
+                } else if (params.PUBLICAR_RESULTADOS_TESTLINK && currentBuild.currentResult == 'FAILURE') {
+                    env.CI_OUTCOME_TESTLINK_PUBLICATION = 'failure'
+                } else {
+                    env.CI_OUTCOME_TESTLINK_PUBLICATION = 'skipped'
+                }
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'No se pudo generar el informe de métricas de esta corrida.') {
+                    sh 'python3 qa/metrics/generate_quality_report.py'
+                }
+            }
             junit testResults: 'backend/target/surefire-reports/TEST-*.xml', allowEmptyResults: true
             script {
                 if (sh(returnStatus: true, script: 'find qa/artifacts -type f -name "*.xml" -print -quit 2>/dev/null | grep -q .') == 0) {

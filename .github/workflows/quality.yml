@@ -66,7 +66,7 @@ jobs:
         continue-on-error: true
         run: >-
           docker exec --env TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
-          "$QA_RUNNER_NAME" bash -lc 'cd /workspace/backend && bash ./mvnw -B -ntp test'
+          "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-backend-tests.sh'
 
       - name: Frontend — pruebas unitarias con cobertura
         id: frontend_tests
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: true
         run: >-
           docker exec "$QA_RUNNER_NAME" bash -lc
-          'cd /workspace/frontend && npm ci && CHROME_BIN=/workspace/qa/jenkins/chrome-headless npm run test:coverage -- --browsers=ChromeHeadless'
+          'cd /workspace && bash qa/jenkins/run-frontend-tests.sh'
 
       - name: Frontend — compilación
         id: frontend_build
@@ -183,20 +183,35 @@ jobs:
             "$QA_RUNNER_NAME" bash -lc \
             'cd /workspace && python3 qa/testlink/publish_results.py --results qa/testlink/results/current-run.json --publish'
 
-      - name: Guardar reportes y evidencias del build
+      - name: Generar métricas de calidad JSON y HTML
+        id: quality_metrics
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dulce-miel-quality-${{ github.run_number }}-${{ github.run_attempt }}
-          if-no-files-found: warn
-          path: |
-            backend/target/surefire-reports/**
-            backend/target/site/jacoco/**
-            frontend/coverage/**
-            frontend/dist/**
-            qa/artifacts/**
-            qa/testlink/results/current-run.json
-            qa/testlink/results/publication-report.json
+        continue-on-error: true
+        env:
+          CI_PROVIDER: GitHub Actions
+          CI_RUN_ID: ${{ github.run_id }}
+          CI_RUN_NUMBER: ${{ github.run_number }}
+          CI_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CI_COMMIT: ${{ github.sha }}
+          CI_BRANCH: ${{ github.ref_name }}
+          CI_EVENT: ${{ github.event_name }}
+          CI_OUTCOME_BACKEND: ${{ steps.backend.outcome }}
+          CI_OUTCOME_FRONTEND_TESTS: ${{ steps.frontend_tests.outcome }}
+          CI_OUTCOME_FRONTEND_BUILD: ${{ steps.frontend_build.outcome }}
+          CI_OUTCOME_QA_DEPENDENCIES: ${{ steps.qa_dependencies.outcome }}
+          CI_OUTCOME_PREPARE_QA: ${{ steps.prepare_qa.outcome }}
+          CI_OUTCOME_NEWMAN: ${{ steps.newman.outcome }}
+          CI_OUTCOME_BEHAVE: ${{ steps.behave.outcome }}
+          CI_OUTCOME_COMPATIBILITY: ${{ steps.compatibility.outcome }}
+          CI_OUTCOME_ACCESSIBILITY: ${{ steps.accessibility.outcome }}
+          CI_OUTCOME_K6_SMOKE: ${{ steps.k6_smoke.outcome }}
+          CI_OUTCOME_K6_BASELINE: ${{ steps.k6_baseline.outcome }}
+          CI_OUTCOME_K6_MODERATE: ${{ steps.k6_moderate.outcome }}
+          CI_OUTCOME_K6_STRESS: ${{ steps.k6_stress.outcome }}
+          CI_OUTCOME_K6_SPIKE: ${{ steps.k6_spike.outcome }}
+          CI_OUTCOME_K6_SUSTAINED: ${{ steps.k6_sustained.outcome }}
+          CI_OUTCOME_TESTLINK_PUBLICATION: ${{ steps.publish_testlink.outcome }}
+        run: python3 qa/metrics/generate_quality_report.py
 
       - name: Quality Gate
         if: ${{ always() }}
@@ -222,6 +237,7 @@ jobs:
           SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
           TESTLINK_VALIDATION_OUTCOME: ${{ steps.validate_testlink.outcome }}
           TESTLINK_PUBLICATION_OUTCOME: ${{ steps.publish_testlink.outcome }}
+          METRICS_OUTCOME: ${{ steps.quality_metrics.outcome }}
         run: |
           failed=0
           for result in \
@@ -231,7 +247,8 @@ jobs:
             "$BEHAVE_OUTCOME" "$COMPATIBILITY_OUTCOME" "$ACCESSIBILITY_OUTCOME" \
             "$K6_SMOKE_OUTCOME" "$K6_BASELINE_OUTCOME" "$K6_MODERATE_OUTCOME" \
             "$K6_STRESS_OUTCOME" "$K6_SPIKE_OUTCOME" "$K6_SUSTAINED_OUTCOME" \
-            "$SUMMARY_OUTCOME" "$TESTLINK_VALIDATION_OUTCOME" "$TESTLINK_PUBLICATION_OUTCOME"; do
+            "$SUMMARY_OUTCOME" "$TESTLINK_VALIDATION_OUTCOME" "$TESTLINK_PUBLICATION_OUTCOME" \
+            "$METRICS_OUTCOME"; do
             if [[ "$result" == 'failure' ]]; then failed=1; fi
           done
           if [[ "$QA_DEPENDENCIES_OUTCOME" != 'success' || "$PREPARE_QA_OUTCOME" != 'success' ]]; then
@@ -242,6 +259,21 @@ jobs:
             exit 1
           fi
           echo 'Quality Gate: todas las suites automatizadas configuradas aprobaron.'
+
+      - name: Guardar reportes y evidencias del build
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dulce-miel-quality-${{ github.run_number }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: |
+            backend/target/surefire-reports/**
+            backend/target/site/jacoco/**
+            frontend/coverage/**
+            frontend/dist/**
+            qa/artifacts/**
+            qa/testlink/results/current-run.json
+            qa/testlink/results/publication-report.json
 
       - name: Limpiar únicamente los recursos QA de esta ejecución
         if: ${{ always() }}
