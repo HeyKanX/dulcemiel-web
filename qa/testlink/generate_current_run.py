@@ -143,24 +143,36 @@ def read_axe(results: dict, path: Path) -> None:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return
-    scanned = [page for page in payload.get("pages", []) if page.get("axe")]
-    if not scanned:
+    pages = payload.get("pages", [])
+    if not pages:
         return
+    scanned = [page for page in pages if page.get("axe")]
+    errors = [page for page in pages if page.get("error")]
     violations = [
         (page.get("route", "?"), violation)
         for page in scanned
         for violation in page["axe"].get("violations", [])
         if violation.get("id") == "color-contrast"
     ]
-    detail = (
-        "Contraste insuficiente detectado por axe-core: " + "; ".join(
-            f"{route} ({len(item.get('nodes', []))} elementos)" for route, item in violations
+    if errors or not scanned:
+        failed_routes = ", ".join(page.get("route", "?") for page in errors)
+        detail = (
+            f"Escaneo axe-core incompleto: {len(scanned)}/{len(pages)} páginas evaluadas."
+            + (f" Rutas con error: {failed_routes}." if failed_routes else "")
+            + " No se considera aprobado por ausencia de evidencia completa."
         )
-        if violations else
-        f"axe-core no encontró violaciones de contraste en {len(scanned)} páginas escaneadas."
-    )
+        status = "f"
+    else:
+        detail = (
+            "Contraste insuficiente detectado por axe-core: " + "; ".join(
+                f"{route} ({len(item.get('nodes', []))} elementos)" for route, item in violations
+            )
+            if violations else
+            f"axe-core no encontró violaciones de contraste en {len(scanned)} páginas escaneadas."
+        )
+        status = "f" if violations else "p"
     add_result(
-        results, "TC-NF-ACC-014", "f" if violations else "p", "axe-core/WCAG AA",
+        results, "TC-NF-ACC-014", status, "axe-core/WCAG AA",
         detail, str(path).replace("\\", "/"),
     )
 
