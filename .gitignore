@@ -26,6 +26,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Ephemeral QA run state and generated reports (archived by Jenkins/GitHub Actions)
+qa/.local/
+qa/artifacts/
+qa/testlink/results/current-run.json
+qa/testlink/results/publication-report.json
+
 # Temporary migration/tool files
 .github/java-upgrade/
 backend/.github/java-upgrade/

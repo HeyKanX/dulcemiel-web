@@ -1,0 +1,256 @@
+name: Dulce Miel - Calidad automatizada
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish_testlink:
+        description: Publicar en TestLink los resultados automatizados de esta ejecución
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dulce-miel-quality-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Pruebas automatizadas en QA aislado
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      QA_DOCKER_NETWORK: dmqa-actions-${{ github.run_id }}-${{ github.run_attempt }}
+      QA_RUNNER_NAME: dmqa-actions-runner-${{ github.run_id }}-${{ github.run_attempt }}
+      QA_RUNNER_IMAGE: dulcemiel-qa-runner:${{ github.run_id }}-${{ github.run_attempt }}
+      BUILD_TAG: GitHub-Actions-${{ github.run_number }}-${{ github.run_attempt }}
+      BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Construir imagen del agente QA
+        id: runner_image
+        run: docker build --pull -f qa/github-actions/Dockerfile.runner -t "$QA_RUNNER_IMAGE" .
+
+      - name: Crear red privada de esta ejecución
+        id: qa_network
+        run: docker network create "$QA_DOCKER_NETWORK"
+
+      - name: Iniciar agente QA en Docker
+        id: qa_runner
+        run: |
+          docker run --detach --name "$QA_RUNNER_NAME" \
+            --network "$QA_DOCKER_NETWORK" \
+            --add-host host.docker.internal:host-gateway \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume /var/run/docker.sock:/var/run/docker.sock \
+            --env BUILD_TAG --env BUILD_NUMBER --env QA_DOCKER_NETWORK \
+            "$QA_RUNNER_IMAGE"
+
+      - name: Instalar dependencias de las suites
+        id: qa_dependencies
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/install-dependencies.sh'
+
+      - name: Backend — Maven y SQL Server de integración
+        id: backend
+        if: ${{ always() && steps.qa_runner.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          docker exec --env TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
+          "$QA_RUNNER_NAME" bash -lc 'cd /workspace/backend && bash ./mvnw -B -ntp test'
+
+      - name: Frontend — pruebas unitarias con cobertura
+        id: frontend_tests
+        if: ${{ always() && steps.qa_runner.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          docker exec "$QA_RUNNER_NAME" bash -lc
+          'cd /workspace/frontend && npm ci && CHROME_BIN=/workspace/qa/jenkins/chrome-headless npm run test:coverage -- --browsers=ChromeHeadless'
+
+      - name: Frontend — compilación
+        id: frontend_build
+        if: ${{ always() && steps.qa_runner.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          docker exec "$QA_RUNNER_NAME" bash -lc
+          'cd /workspace/frontend && npm run build -- --configuration development'
+
+      - name: Preparar entorno QA efímero en Docker Compose
+        id: prepare_qa
+        if: ${{ always() && steps.qa_dependencies.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/prepare-qa.sh'
+
+      - name: API — Newman
+        id: newman
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh Newman'
+
+      - name: Interfaz — Behave y Selenium
+        id: behave
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh Behave'
+
+      - name: Compatibilidad — Playwright
+        id: compatibility
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh Compatibility'
+
+      - name: Accesibilidad automatizada — axe-core
+        id: accessibility
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh Axe'
+
+      - name: K6 — humo
+        id: k6_smoke
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Smoke'
+
+      - name: K6 — línea base
+        id: k6_baseline
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Baseline'
+
+      - name: K6 — carga moderada
+        id: k6_moderate
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Moderate'
+
+      - name: K6 — estrés progresivo
+        id: k6_stress
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Stress'
+
+      - name: K6 — pico repentino
+        id: k6_spike
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Spike'
+
+      - name: K6 — carga sostenida
+        id: k6_sustained
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh K6Sustained'
+
+      - name: Generar resumen automatizado por ejecución
+        id: summary
+        if: ${{ always() && steps.qa_runner.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/generate-summary.sh'
+
+      - name: Validar mapeo de resultados TestLink sin publicar
+        id: validate_testlink
+        if: ${{ always() && steps.summary.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          docker exec "$QA_RUNNER_NAME" bash -lc
+          'cd /workspace && python3 qa/testlink/publish_results.py --results qa/testlink/results/current-run.json'
+
+      - name: Publicar resultados automatizados en TestLink
+        id: publish_testlink
+        if: ${{ always() && inputs.publish_testlink == true && steps.validate_testlink.outcome == 'success' }}
+        env:
+          TESTLINK_URL: ${{ secrets.TESTLINK_URL }}
+          TESTLINK_DEVKEY: ${{ secrets.TESTLINK_DEVKEY }}
+          TESTLINK_PROJECT_NAME: Dulce Miel
+          TESTLINK_PLAN_NAME: Plan de pruebas - Dulce Miel
+        run: |
+          if [[ -z "$TESTLINK_URL" || -z "$TESTLINK_DEVKEY" ]]; then
+            echo 'Faltan los secretos TESTLINK_URL o TESTLINK_DEVKEY en GitHub Actions.' >&2
+            exit 1
+          fi
+          docker exec \
+            --env TESTLINK_URL --env TESTLINK_DEVKEY \
+            --env TESTLINK_PROJECT_NAME --env TESTLINK_PLAN_NAME \
+            "$QA_RUNNER_NAME" bash -lc \
+            'cd /workspace && python3 qa/testlink/publish_results.py --results qa/testlink/results/current-run.json --publish'
+
+      - name: Guardar reportes y evidencias del build
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dulce-miel-quality-${{ github.run_number }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: |
+            backend/target/surefire-reports/**
+            backend/target/site/jacoco/**
+            frontend/coverage/**
+            frontend/dist/**
+            qa/artifacts/**
+            qa/testlink/results/current-run.json
+            qa/testlink/results/publication-report.json
+
+      - name: Quality Gate
+        if: ${{ always() }}
+        env:
+          RUNNER_IMAGE_OUTCOME: ${{ steps.runner_image.outcome }}
+          QA_NETWORK_OUTCOME: ${{ steps.qa_network.outcome }}
+          QA_RUNNER_OUTCOME: ${{ steps.qa_runner.outcome }}
+          QA_DEPENDENCIES_OUTCOME: ${{ steps.qa_dependencies.outcome }}
+          BACKEND_OUTCOME: ${{ steps.backend.outcome }}
+          FRONTEND_TESTS_OUTCOME: ${{ steps.frontend_tests.outcome }}
+          FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
+          PREPARE_QA_OUTCOME: ${{ steps.prepare_qa.outcome }}
+          NEWMAN_OUTCOME: ${{ steps.newman.outcome }}
+          BEHAVE_OUTCOME: ${{ steps.behave.outcome }}
+          COMPATIBILITY_OUTCOME: ${{ steps.compatibility.outcome }}
+          ACCESSIBILITY_OUTCOME: ${{ steps.accessibility.outcome }}
+          K6_SMOKE_OUTCOME: ${{ steps.k6_smoke.outcome }}
+          K6_BASELINE_OUTCOME: ${{ steps.k6_baseline.outcome }}
+          K6_MODERATE_OUTCOME: ${{ steps.k6_moderate.outcome }}
+          K6_STRESS_OUTCOME: ${{ steps.k6_stress.outcome }}
+          K6_SPIKE_OUTCOME: ${{ steps.k6_spike.outcome }}
+          K6_SUSTAINED_OUTCOME: ${{ steps.k6_sustained.outcome }}
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+          TESTLINK_VALIDATION_OUTCOME: ${{ steps.validate_testlink.outcome }}
+          TESTLINK_PUBLICATION_OUTCOME: ${{ steps.publish_testlink.outcome }}
+        run: |
+          failed=0
+          for result in \
+            "$RUNNER_IMAGE_OUTCOME" "$QA_NETWORK_OUTCOME" "$QA_RUNNER_OUTCOME" \
+            "$QA_DEPENDENCIES_OUTCOME" "$BACKEND_OUTCOME" "$FRONTEND_TESTS_OUTCOME" \
+            "$FRONTEND_BUILD_OUTCOME" "$PREPARE_QA_OUTCOME" "$NEWMAN_OUTCOME" \
+            "$BEHAVE_OUTCOME" "$COMPATIBILITY_OUTCOME" "$ACCESSIBILITY_OUTCOME" \
+            "$K6_SMOKE_OUTCOME" "$K6_BASELINE_OUTCOME" "$K6_MODERATE_OUTCOME" \
+            "$K6_STRESS_OUTCOME" "$K6_SPIKE_OUTCOME" "$K6_SUSTAINED_OUTCOME" \
+            "$SUMMARY_OUTCOME" "$TESTLINK_VALIDATION_OUTCOME" "$TESTLINK_PUBLICATION_OUTCOME"; do
+            if [[ "$result" == 'failure' ]]; then failed=1; fi
+          done
+          if [[ "$QA_DEPENDENCIES_OUTCOME" != 'success' || "$PREPARE_QA_OUTCOME" != 'success' ]]; then
+            failed=1
+          fi
+          if [[ "$failed" -eq 1 ]]; then
+            echo 'Quality Gate: se detectaron fallos en una o más suites o en la preparación.'
+            exit 1
+          fi
+          echo 'Quality Gate: todas las suites automatizadas configuradas aprobaron.'
+
+      - name: Limpiar únicamente los recursos QA de esta ejecución
+        if: ${{ always() }}
+        run: |
+          if docker ps -aq --filter "name=^${QA_RUNNER_NAME}$" | grep -q .; then
+            docker exec "$QA_RUNNER_NAME" bash -lc \
+              'cd /workspace && if [[ -f qa/.local/jenkins-run.json ]]; then bash qa/jenkins/cleanup-qa.sh; fi' || true
+            docker rm --force "$QA_RUNNER_NAME" || true
+          fi
+          if docker network inspect "$QA_DOCKER_NETWORK" >/dev/null 2>&1; then
+            docker network rm "$QA_DOCKER_NETWORK" || true
+          fi

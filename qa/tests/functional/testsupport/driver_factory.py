@@ -5,6 +5,9 @@ from selenium import webdriver
 
 def create_driver():
     options = webdriver.ChromeOptions()
+    chrome_binary = os.getenv("CHROME_BIN")
+    if chrome_binary:
+        options.binary_location = chrome_binary
     if os.getenv("QA_HEADLESS", "1") == "1":
         options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")

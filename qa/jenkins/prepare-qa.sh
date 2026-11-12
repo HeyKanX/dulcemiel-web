@@ -12,7 +12,8 @@ rm -f "$ready_path"
 [[ -n "${BUILD_TAG:-}" ]] || { echo 'Este preparador requiere BUILD_TAG de Jenkins.' >&2; exit 1; }
 [[ -f "$local_dir/jenkins-deps-ready.flag" ]] || { echo 'No se instalaron las dependencias QA.' >&2; exit 1; }
 [[ ! -f "$state_path" ]] || { echo 'Quedó estado de otra ejecución QA; no se iniciará otra pila.' >&2; exit 1; }
-docker network inspect jenkins_default >/dev/null 2>&1 || { echo 'Falta la red Docker privada jenkins_default.' >&2; exit 1; }
+qa_network="${QA_DOCKER_NETWORK:-jenkins_default}"
+docker network inspect "$qa_network" >/dev/null 2>&1 || { echo "Falta la red Docker privada $qa_network." >&2; exit 1; }
 
 safe_tag="$(printf '%s' "$BUILD_TAG" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g' | cut -c1-30)"
 suffix="$(openssl rand -hex 4)"
@@ -28,7 +29,7 @@ QA_SQL_PASSWORD='$password'
 QA_JWT_SECRET='$jwt_secret'
 QA_WEB_URL=$web_url
 QA_API_URL=$api_url
-QA_DOCKER_NETWORK=jenkins_default
+QA_DOCKER_NETWORK=$qa_network
 EOF
 python3 - "$state_path" "$BUILD_TAG" "$project" "$run_id" <<'PY'
 import json, sys

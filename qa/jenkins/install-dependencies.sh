@@ -12,7 +12,11 @@ command -v node >/dev/null || { echo 'Falta Node.js en el agente.' >&2; exit 1; 
 command -v python3 >/dev/null || { echo 'Falta Python 3 en el agente.' >&2; exit 1; }
 command -v k6 >/dev/null || { echo 'Falta K6 en el agente.' >&2; exit 1; }
 [[ -x /usr/bin/chromium ]] || { echo 'Falta Chromium en el agente.' >&2; exit 1; }
-[[ -x /usr/bin/chromedriver ]] || { echo 'Falta ChromeDriver en el agente.' >&2; exit 1; }
+if [[ "${QA_SELENIUM_MANAGER:-0}" != '1' ]]; then
+  [[ -x /usr/bin/chromedriver ]] || { echo 'Falta ChromeDriver en el agente.' >&2; exit 1; }
+else
+  echo 'Selenium Manager resolverá ChromeDriver para Chromium en esta ejecución.'
+fi
 docker info >/dev/null
 
 npm ci --prefix qa
