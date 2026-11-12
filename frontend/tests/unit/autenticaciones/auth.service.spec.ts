@@ -5,6 +5,7 @@ import { AuthService } from '../../../src/app/autenticaciones/auth.service';
 import { environment } from '../../../src/environments/environment';
 import { Usuario } from '../../../src/app/models/usuario.model';
 
+// Verificaciones unitarias relacionadas con TC-F-003, TC-F-004 y TC-F-018.
 describe('AuthService, auditoría de sesión', () => {
   let service: AuthService;
   let http: HttpTestingController;

@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/** Verificaciones unitarias vinculadas parcialmente a TC-F-013, TC-F-014, TC-F-019 y TC-F-020. */
 class PedidosControllerAuditTest {
     JdbcTemplate jdbc = mock(JdbcTemplate.class);
     AuthSupport auth = mock(AuthSupport.class);

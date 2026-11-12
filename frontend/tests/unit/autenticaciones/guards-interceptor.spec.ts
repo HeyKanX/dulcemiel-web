@@ -7,6 +7,7 @@ import { authGuard } from '../../../src/app/autenticaciones/auth.guard';
 import { adminGuard } from '../../../src/app/autenticaciones/admin.guard';
 import { JwtInterceptor } from '../../../src/app/autenticaciones/jwt.interceptor';
 
+// Verificaciones unitarias de autorización relacionadas con TC-F-018.
 describe('Guards e interceptor', () => {
   const auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'canAccessAdmin', 'getToken']);
   const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
