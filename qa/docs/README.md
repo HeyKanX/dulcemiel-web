@@ -18,15 +18,16 @@ Este índice organiza los documentos del expediente sin duplicar resultados. Los
 - `FASE-3-METRICAS-OE1-OE7-2026-11-13.md`: esquema y línea base histórica de métricas.
 - `ESQUEMA-METRICAS-CALIDAD.md`: definiciones, denominadores, reglas de clasificación y evidencia exigida.
 - `fase-3/CI-BUILD-15-METRICAS-2026-11-13.md`: lectura detallada y trazada a OE del build 15; se conserva como evidencia histórica del candidato con correcciones.
-- `fase-3/CI-BUILD-16-METRICAS-2026-11-13.md`: corte actual posterior a restaurar el frontend; explica unidades, numeradores, denominadores, severidad, fallos, límites y vínculo con cada OE.
+- `fase-3/CI-BUILD-16-METRICAS-2026-11-13.md`: corte anterior, conservado como histórico para comparar la variación entre builds.
+- `fase-3/CI-BUILD-17-METRICAS-2026-11-13.md`: corte actual; explica unidades, numeradores, denominadores, severidad, fallos, límites y vínculo con cada OE, incluidos los valores K6 de esta corrida.
 - `INFORME-LINEA-BASE-METRICAS-2026-11-12.md` y los informes de builds anteriores: antecedentes históricos; no reemplazan un build actual.
 - Los registros fuente están en `qa/metrics/` y sus copias por corrida en `qa/metrics/reports/<runId>/`.
 
 ## Fase 4 — informe final y matriz OE1–OE7
 
 - El informe académico editable y sus versiones se conservan en `../../../../Informe/`.
-- La matriz del build 16 está en `fase-4/MATRIZ-OE1-OE7-BUILD-16.md` y vincula cada resultado con su objetivo, fórmula, interpretación, evidencia y límite.
-- El HTML actual del mismo corte está en `fase-4/metricas-calidad-build-16.html` y el JSON fuente en `fase-4/quality-summary-build-16.json`.
+- La matriz del build 17 está en `fase-4/MATRIZ-OE1-OE7-BUILD-17.md` y vincula cada resultado con su objetivo, fórmula, interpretación, evidencia y límite. La del build 16 se conserva como histórico.
+- El HTML actual está en `fase-4/metricas-calidad-build-17.html` y el JSON fuente en `fase-4/quality-summary-build-17.json`; el build 16 queda como comparación histórica.
 - La matriz se vincula con `qa/metrics/objective-map.json`; no se calcula un porcentaje global de OE si la rúbrica no define ponderaciones.
 - El HTML y el JSON de cada build se generan juntos a partir del mismo resumen; ambos deben referir al mismo build, commit y entorno.
 
