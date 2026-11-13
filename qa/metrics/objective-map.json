@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "source": "Rúbrica del proyecto compartida por el equipo",
+  "note": "Este mapa vincula indicadores con objetivos; no calcula porcentajes de cumplimiento del objetivo. Estos requieren la rúbrica desglosada y evidencia del mismo alcance/build.",
+  "objectives": [
+    {
+      "id": "OE1",
+      "name": "Historias de Usuario y Criterios de Aceptación",
+      "target": "100%",
+      "indicators": ["Cobertura de HU y criterios de aceptación", "Trazabilidad requisito/criterio a caso de prueba"],
+      "evidence": ["Informe/Registro_Casos_Prueba_Dulce_Miel_ACTUAL.xlsx", "qa/testlink/results/case-id-map.json"],
+      "limitation": "El pipeline no recibe un inventario versionado de todas las HU y CA; no calcula cobertura requisito/criterio."
+    },
+    {
+      "id": "OE2",
+      "name": "Diseño de Casos de Prueba",
+      "target": "100%",
+      "indicators": ["Unicidad e integridad de campos", "Escenarios positivos, negativos y límite", "Reproducibilidad"],
+      "evidence": ["Informe/Registro_Casos_Prueba_Dulce_Miel_ACTUAL.xlsx", "qa/testlink/results/case-id-map.json"],
+      "limitation": "La validación semántica del diseño y la cobertura de clases de equivalencia se revisan contra las HU/CA; no se infieren de que las celdas estén diligenciadas."
+    },
+    {
+      "id": "OE3",
+      "name": "Pruebas Unitarias, de Integración y TDD",
+      "target": "100%",
+      "indicators": ["JUnit/Surefire", "Cobertura JaCoCo", "Integración SQL/Testcontainers", "Prueba identificada como TDD"],
+      "evidence": ["backend/target/surefire-reports/", "backend/target/site/jacoco/jacoco.xml"]
+    },
+    {
+      "id": "OE4",
+      "name": "Pruebas Funcionales y de Aceptación",
+      "target": "100%",
+      "indicators": ["Pass/fail por suite", "Resultados por ID único", "Ejecución y publicación actual a TestLink"],
+      "evidence": ["qa/artifacts/", "qa/testlink/results/current-run.json", "qa/testlink/results/publication-report.json"]
+    },
+    {
+      "id": "OE5",
+      "name": "Pruebas No Funcionales",
+      "target": "100%",
+      "indicators": ["Perfiles K6 y umbrales", "axe-core", "Compatibilidad Playwright", "Seguridad Newman"],
+      "evidence": ["qa/artifacts/", "qa/metrics/reports/"]
+    },
+    {
+      "id": "OE6",
+      "name": "Herramientas de Automatización y CI/CD",
+      "target": ">=75%",
+      "indicators": ["Tasa de automatización del catálogo aplicable", "Jenkins/GitHub Actions", "Docker", "Artefactos de ejecución"],
+      "evidence": ["Jenkinsfile", ".github/workflows/quality.yml", "qa/metrics/automation-classification.json"]
+    },
+    {
+      "id": "OE7",
+      "name": "Métricas de Calidad de Software",
+      "target": ">=50%",
+      "indicators": ["Cobertura estática/dinámica", "Tasa y severidad de defectos", "Pass/fail", "Defect leakage", "Flaky rate", "Automatización"],
+      "evidence": ["quality-summary.json", "quality-report.html", "qa/metrics/defect-register.json", "qa/metrics/stability-baseline.json"],
+      "limitation": "Defect leakage queda N/A sin incidencias posliberación ligadas a versión y periodo. La rúbrica no especifica ponderación para convertir submétricas en porcentaje global de OE7."
+    }
+  ]
+}

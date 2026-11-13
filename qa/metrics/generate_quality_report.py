@@ -36,6 +36,18 @@ def read_json(path: Path) -> dict[str, Any] | None:
         return None
 
 
+def read_objective_map(repo: Path) -> dict[str, Any]:
+    objective_map = read_json(repo / "qa/metrics/objective-map.json")
+    if objective_map and isinstance(objective_map.get("objectives"), list):
+        return objective_map
+    return {
+        "schema_version": "1.0",
+        "source": "Rúbrica del proyecto",
+        "note": "No se encontró un mapa OE1–OE7 válido; no se calcula cumplimiento por objetivo.",
+        "objectives": [],
+    }
+
+
 def git_value(repo: Path, *args: str) -> str | None:
     try:
         value = subprocess.check_output(["git", *args], cwd=repo, text=True, stderr=subprocess.DEVNULL).strip()
@@ -522,6 +534,7 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
             "interpretation": "Tasas calculadas sobre IDs únicos automatizados con resultado en current-run.json. No son tasa de defectos ni cubren las pruebas manuales.",
         },
         "suites": suites,
+        "objective_mapping": read_objective_map(repo),
         "coverage": coverage,
         "static_analysis": static_analysis,
         "defects": {
@@ -601,6 +614,16 @@ def html_report(summary: dict[str, Any]) -> str:
     automation_class = summary["automation"].get("automation_classification", {})
     defects = summary["defects"]
     flaky = summary["flaky_tests"]
+    objective_map = summary.get("objective_mapping", {})
+    objective_rows = "".join(
+        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+            html.escape(str(item.get("id", ""))),
+            html.escape(str(item.get("name", ""))),
+            html.escape(str(item.get("target", "N/A"))),
+            html.escape("; ".join(item.get("indicators", []))),
+            html.escape(str(item.get("limitation") or "Ver indicadores en las métricas y evidencias del build.")),
+        ) for item in objective_map.get("objectives", [])
+    )
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Métricas de calidad — Dulce Miel — {html.escape(str(meta.get('build_id')))}</title>
@@ -636,6 +659,9 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <li><b>Automatización del catálogo:</b> {('N/A' if summary['automation']['automation_rate_pct'] is None else f"{summary['automation']['automation_rate_pct']:.2f}% ({automation_class.get('automated_linked', 0)}/{automation_class.get('applicable_cases', 0)} casos automatizables)")}; {automation_class.get('automation_gap', 0)} brechas y {automation_class.get('manual_only', 0)} solo manuales.</li>
 <li><b>Cobertura de ejecución del catálogo en este build:</b> {('N/A' if summary['automation']['execution_coverage_pct'] is None else f"{summary['automation']['execution_coverage_pct']:.2f}% ({summary['automation']['unique_cases_with_automated_result_this_build']}/{summary['automation']['catalog_case_count']})")}.</li>
 </ul>
+<h2>Trazabilidad de métricas a OE1–OE7</h2>
+<p>{html.escape(str(objective_map.get('note', 'El mapa relaciona objetivos e indicadores; no asigna por sí mismo porcentaje de cumplimiento.')))}</p>
+<table><thead><tr><th>Objetivo</th><th>Alcance</th><th>Meta de rúbrica</th><th>Indicadores relacionados</th><th>Alcance/límite</th></tr></thead><tbody>{objective_rows or '<tr><td colspan="5">Mapa OE no disponible.</td></tr>'}</tbody></table>
 <p><b>TestLink:</b> resumen {html.escape(str(summary['testlink']['summary_generated']))}; publicación {html.escape(str(summary['testlink']['publication_status']))}.</p>
 <p>Artefactos originales y resumen JSON se conservan bajo <code>{html.escape(summary['evidence']['run_directory'])}</code>.</p>
 </body></html>"""
