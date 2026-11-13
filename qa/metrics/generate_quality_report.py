@@ -659,7 +659,60 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
     }
 
 
-def html_report(summary: dict[str, Any]) -> str:
+def report_trends(repo: Path | None, summary: dict[str, Any]) -> tuple[str, str]:
+    """Show CI builds separately from comparable, controlled repetitions."""
+    history = []
+    if repo:
+        for path in (repo / "qa/docs/fase-4").glob("quality-summary-build-*.json"):
+            item = read_json(path)
+            if item and item.get("metadata") and item.get("summary", {}).get("automated_linked_cases"):
+                history.append(item)
+    history.append(summary)
+    by_run = {str(item["metadata"].get("run_id") or item["metadata"].get("build_id")): item for item in history}
+    recent = sorted(by_run.values(), key=lambda item: str(item["metadata"].get("timestamp_utc") or ""), reverse=True)[:3]
+    ci_rows = "".join(
+        "<tr><td>{}</td><td>{}</td><td><code>{}</code></td><td>{}</td><td>{}</td><td>{}</td><td>{:.2f}%</td></tr>".format(
+            html.escape(str(item["metadata"].get("timestamp_utc") or "N/A")),
+            html.escape(str(item["metadata"].get("build_number") or item["metadata"].get("build_id") or "N/A")),
+            html.escape(str(item["metadata"].get("commit") or "N/A")[:8]),
+            item["summary"]["automated_linked_cases"]["total_executed"],
+            item["summary"]["automated_linked_cases"]["passed"],
+            item["summary"]["automated_linked_cases"]["failed"],
+            item["summary"]["automated_linked_cases"]["pass_rate_pct"],
+        ) for item in recent
+    )
+    ci_table = ("<h2>Tendencia de CI (builds disponibles)</h2>"
+                "<table><thead><tr><th>UTC</th><th>Build</th><th>Commit</th><th>Casos únicos</th><th>Aprobados</th><th>No aprobados</th><th>Pass rate</th></tr></thead>"
+                f"<tbody>{ci_rows}</tbody></table>"
+                "<p>Las filas cuentan IDs automatizados únicos por build. Commits distintos permiten comparar resultados, "
+                "pero no calcular estabilidad ni flaky rate. Un mismo total tampoco demuestra que fallaron los mismos IDs.</p>")
+    baseline = read_json(repo / "qa/metrics/stability-baseline.json") if repo else None
+    if not baseline or not baseline.get("runs"):
+        return ci_table, "<h2>Repeticiones controladas</h2><p>N/A: no hay muestra comparable disponible.</p>"
+    runs = baseline["runs"]
+    controlled_rows = ""
+    for run in runs:
+        statuses = list(run.get("statuses", {}).values())
+        passed, failed = statuses.count("p"), statuses.count("f")
+        controlled_rows += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{:.2f}%</td><td>{}</td></tr>".format(
+            html.escape(str(run.get("run_id") or "N/A")), len(statuses), passed, failed,
+            100 * passed / (passed + failed) if passed + failed else 0, int(run.get("retry_count") or 0))
+    result = baseline.get("result", {})
+    controlled_table = ("<h2>Estabilidad: muestra controlada histórica</h2>"
+                        f"<p>Commit <code>{html.escape(str(baseline.get('control', {}).get('commit') or 'N/A'))}</code>; "
+                        f"{len(runs)} corridas del mismo conjunto y entorno. "
+                        f"Flaky rate: {result.get('cases_flaky', 'N/A')}/{result.get('cases_repeated', 'N/A')} "
+                        f"= {result.get('flaky_rate_pct', 'N/A')}%. Consistencia de estado: "
+                        f"{100 - float(result.get('flaky_rate_pct', 0)):.2f}% en esta muestra, no en todo el sistema.</p>"
+                        "<table><thead><tr><th>Corrida</th><th>Casos</th><th>Aprobados</th><th>No aprobados</th><th>Pass rate</th><th>Retries</th></tr></thead>"
+                        f"<tbody>{controlled_rows}</tbody></table>"
+                        "<p>Los mismos cinco casos aprobaron y los mismos tres fallaron en cada repetición. "
+                        "La consistencia mide cambios de estado entre repeticiones; no mide calidad funcional. "
+                        "Esta muestra tiene otro commit y no se atribuye al build actual.</p>")
+    return ci_table, controlled_table
+
+
+def html_report(summary: dict[str, Any], repo: Path | None = None) -> str:
     meta = summary["metadata"]
     rates = summary["summary"]["automated_linked_cases"]
     suites = summary["suites"]
@@ -702,6 +755,9 @@ def html_report(summary: dict[str, Any]) -> str:
     automation_class = summary["automation"].get("automation_classification", {})
     defects = summary["defects"]
     flaky = summary["flaky_tests"]
+    ci_trend, controlled_trend = report_trends(repo, summary)
+    junit = next((row for row in suites if row.get("tool") == "Maven/Surefire"), None)
+    junit_counts = junit["counts"] if junit else None
     flaky_current_text = (
         "N/A porque el fingerprint de esta corrida no coincide con la muestra controlada."
         if flaky["rate_pct"] is None
@@ -746,12 +802,24 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <b>Entorno:</b> {html.escape(str(meta.get('environment')))} · <b>UTC de ejecución:</b> {html.escape(str(meta.get('timestamp_utc')))} · <b>UTC de generación del reporte:</b> {html.escape(str(meta.get('report_generated_at_utc', 'N/A')))}<br>
 <b>Ejecución:</b> {('<a href="' + html.escape(meta['run_url'], quote=True) + '">abrir build</a>') if meta.get('run_url') else 'N/A'}</div>
 <div class="grid">
+<div class="card"><div class="metric">{('N/A' if rates['pass_rate_pct'] is None else f"{rates['pass_rate_pct']:.2f}%")}</div><div>Pass rate · {rates['passed']}/{rates['total_executed']} IDs automatizados</div></div>
+<div class="card"><div class="metric na">N/A</div><div>Estabilidad del build actual · sin repeticiones comparables</div></div>
+<div class="card"><div class="metric na">N/A</div><div>Flaky del build actual · sin repeticiones comparables</div></div>
+<div class="card"><div class="metric">{(f"{junit_counts['passed']}/{junit_counts['total']}" if junit_counts else 'N/A')}</div><div>Pruebas JUnit/Surefire aprobadas · OE3</div></div>
+</div>
+<p>Estas tarjetas separan los IDs trazables de las pruebas JUnit: son unidades diferentes. La estabilidad y el flaky rate del build actual requieren repetir el mismo commit, datos y entorno; la muestra histórica se detalla más abajo.</p>
+<div class="grid">
 <div class="card"><div>Casos automatizados trazables ejecutados</div><div class="metric">{rates['total_executed']}</div></div>
 <div class="card"><div>Aprobados</div><div class="metric">{rates['passed']}</div></div>
 <div class="card"><div>No aprobados</div><div class="metric">{rates['failed']}</div></div>
 <div class="card"><div>Pass rate / fail rate</div><div class="metric">{('N/A' if rates['pass_rate_pct'] is None else f"{rates['pass_rate_pct']:.2f}% / {rates['fail_rate_pct']:.2f}%")}</div></div>
 </div>
 <p><b>Qué significan estos cuatro valores:</b> el total cuenta IDs de caso únicos que esta corrida automatizada vinculó con TestLink y dejó en aprobado o no aprobado; si un ID aparece más de una vez, se cuenta una vez. “Aprobados” y “No aprobados” son esos resultados observados. El pass rate se calcula como aprobados ÷ (aprobados + no aprobados) × 100; el fail rate usa no aprobados en el numerador y el mismo denominador. Casos omitidos, bloqueados, manuales y sin resultado no entran en ese cálculo. Por eso el fail rate no equivale a tasa de defectos: un fallo puede provenir del producto, el script, los datos o el entorno y requiere clasificación.</p>
+{ci_trend}
+{controlled_trend}
+<h2>Calidad estática (SpotBugs y compilador TypeScript)</h2>
+<div class="card"><b>Java / SpotBugs:</b> {html.escape(str(static.get('finding_count', 'N/A')))} hallazgos; {html.escape(str(static.get('new_finding_count', 'N/A')))} nuevos y {html.escape(str(static.get('existing_finding_count', 'N/A')))} existentes frente a la baseline. <b>TypeScript:</b> {html.escape(str(ts_analysis.get('finding_count', 'N/A')))} diagnósticos. ESLint no se ejecutó en este proyecto y no se le atribuyen estos datos.</div>
+<p>El análisis estático revisa código sin ejecutar flujos de usuario; sus hallazgos no se suman a JUnit, pass rate ni flaky rate. Los hallazgos existentes siguen requiriendo revisión, aunque no sean nuevos.</p>
 <h2>Resultados por suite</h2><table><thead><tr><th>Suite</th><th>Herramienta</th><th>Unidad contada</th><th>Estado</th><th>Total reportado</th><th>Aprobados</th><th>Fallidos</th><th>Omitidos</th><th>Bloqueados</th><th>Pass rate</th></tr></thead><tbody>{suite_rows}</tbody></table>
 <p><b>Cómo leer una fila:</b> “Total reportado” incluye los elementos que la herramienta encontró en su reporte; “aprobados”, “fallidos”, “omitidos” y “bloqueados” usan la unidad indicada para esa suite. El denominador de pass/fail es aprobados + fallidos; “Pass rate” = aprobados ÷ ese denominador × 100. Omitidos y bloqueados no se consideran ejecutados y quedan fuera del porcentaje. Newman cuenta aserciones, no solicitudes: el número de solicitudes aparece en la nota de esa suite y no se suma a las aserciones. Las unidades distintas entre suites no se suman. “Estado” resume la suite; un build fallido señala al menos una condición no satisfecha, no que todas las suites hayan fallado.</p>
 <h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul>
@@ -802,7 +870,7 @@ def main() -> int:
     json_path = output_dir / "quality-summary.json"
     html_path = output_dir / "quality-report.html"
     json_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
-    html_path.write_text(html_report(summary), encoding="utf-8")
+    html_path.write_text(html_report(summary, repo), encoding="utf-8")
     print(f"Resumen JSON: {json_path}")
     print(f"Reporte HTML: {html_path}")
     print(f"Casos automatizados trazables: {summary['summary']['automated_linked_cases']['total_executed']} "
