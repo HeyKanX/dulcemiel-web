@@ -89,7 +89,9 @@ def verify_admin_denial(context):
 def reload_catalog(context):
     # Aísla únicamente las solicitudes disparadas por esta recarga.
     context.browser.get_log("performance")
+    previous_body = context.browser.find_element(By.TAG_NAME, "body")
     context.browser.refresh()
+    WebDriverWait(context.browser, 12).until(EC.staleness_of(previous_body))
     WebDriverWait(context.browser, 12).until(
         lambda browser: browser.find_elements(By.CSS_SELECTOR, ".product-card")
         or browser.find_elements(By.CSS_SELECTOR, ".catalog-header + .alert-danger")
@@ -138,7 +140,7 @@ def verify_reloaded_catalog(context):
         browser_errors = [
             {"level": item.get("level"), "message": item.get("message", "")[:240]}
             for item in context.browser.get_log("browser")
-            if item.get("level") == "SEVERE"
+            if item.get("level") == "SEVERE" and "favicon.ico" not in item.get("message", "")
         ]
         assert False, (
             f"El catálogo no mostró Miel QA tras recargar; error_visible="
