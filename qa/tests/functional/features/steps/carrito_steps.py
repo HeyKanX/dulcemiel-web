@@ -107,6 +107,15 @@ def verify_reloaded_catalog(context):
     product_cards = context.browser.find_elements(By.CSS_SELECTOR, ".product-card")
     if not any("Miel QA" in card.text for card in product_cards):
         text = context.browser.find_element(By.TAG_NAME, "body").text
+        api_probe = {}
+        try:
+            response = requests.get(f"{context.api_url}/productos", timeout=10)
+            api_probe = {
+                "status": response.status_code,
+                "body": response.text[:500],
+            }
+        except requests.RequestException as exc:
+            api_probe = {"error": type(exc).__name__, "detail": str(exc)[:300]}
         api_events = []
         request_urls = {}
         try:
@@ -143,7 +152,8 @@ def verify_reloaded_catalog(context):
             if item.get("level") == "SEVERE" and "favicon.ico" not in item.get("message", "")
         ]
         assert False, (
-            f"El catálogo no mostró Miel QA tras recargar; error_visible="
+            f"El catálogo no mostró Miel QA tras recargar; url={context.browser.current_url}; "
+            f"api_probe={api_probe}; error_visible="
             f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}; "
             f"browser_errors={browser_errors}"
         )
