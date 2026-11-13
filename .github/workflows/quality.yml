@@ -122,6 +122,12 @@ jobs:
         continue-on-error: true
         run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh Axe'
 
+      - name: Casos automatizados seleccionados — Playwright
+        id: pending_playwright
+        if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
+        continue-on-error: true
+        run: docker exec "$QA_RUNNER_NAME" bash -lc 'cd /workspace && bash qa/jenkins/run-suite.sh PendingPlaywright'
+
       - name: K6 — humo
         id: k6_smoke
         if: ${{ always() && steps.prepare_qa.outcome == 'success' }}
@@ -213,6 +219,7 @@ jobs:
           CI_OUTCOME_BEHAVE: ${{ steps.behave.outcome }}
           CI_OUTCOME_COMPATIBILITY: ${{ steps.compatibility.outcome }}
           CI_OUTCOME_ACCESSIBILITY: ${{ steps.accessibility.outcome }}
+          CI_OUTCOME_PENDING_PLAYWRIGHT: ${{ steps.pending_playwright.outcome }}
           CI_OUTCOME_K6_SMOKE: ${{ steps.k6_smoke.outcome }}
           CI_OUTCOME_K6_BASELINE: ${{ steps.k6_baseline.outcome }}
           CI_OUTCOME_K6_MODERATE: ${{ steps.k6_moderate.outcome }}
@@ -238,6 +245,7 @@ jobs:
           BEHAVE_OUTCOME: ${{ steps.behave.outcome }}
           COMPATIBILITY_OUTCOME: ${{ steps.compatibility.outcome }}
           ACCESSIBILITY_OUTCOME: ${{ steps.accessibility.outcome }}
+          PENDING_PLAYWRIGHT_OUTCOME: ${{ steps.pending_playwright.outcome }}
           K6_SMOKE_OUTCOME: ${{ steps.k6_smoke.outcome }}
           K6_BASELINE_OUTCOME: ${{ steps.k6_baseline.outcome }}
           K6_MODERATE_OUTCOME: ${{ steps.k6_moderate.outcome }}
@@ -254,7 +262,7 @@ jobs:
             "$RUNNER_IMAGE_OUTCOME" "$QA_NETWORK_OUTCOME" "$QA_RUNNER_OUTCOME" \
             "$QA_DEPENDENCIES_OUTCOME" "$BACKEND_OUTCOME" "$FRONTEND_TESTS_OUTCOME" \
             "$FRONTEND_BUILD_OUTCOME" "$STATIC_ANALYSIS_OUTCOME" "$PREPARE_QA_OUTCOME" "$NEWMAN_OUTCOME" \
-            "$BEHAVE_OUTCOME" "$COMPATIBILITY_OUTCOME" "$ACCESSIBILITY_OUTCOME" \
+            "$BEHAVE_OUTCOME" "$COMPATIBILITY_OUTCOME" "$ACCESSIBILITY_OUTCOME" "$PENDING_PLAYWRIGHT_OUTCOME" \
             "$K6_SMOKE_OUTCOME" "$K6_BASELINE_OUTCOME" "$K6_MODERATE_OUTCOME" \
             "$K6_STRESS_OUTCOME" "$K6_SPIKE_OUTCOME" "$K6_SUSTAINED_OUTCOME" \
             "$SUMMARY_OUTCOME" "$TESTLINK_VALIDATION_OUTCOME" "$TESTLINK_PUBLICATION_OUTCOME" \

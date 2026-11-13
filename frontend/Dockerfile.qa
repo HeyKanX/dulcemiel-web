@@ -8,4 +8,4 @@ COPY frontend/ ./
 RUN sed -i "s#http://localhost:5000/api#${QA_API_URL}#" src/environments/environment.ts
 
 EXPOSE 4200
-CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--port", "4200", "--allowed-hosts", "frontend"]

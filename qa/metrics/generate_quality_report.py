@@ -347,11 +347,14 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
     current_run = read_json(current_run_path)
     suites: list[dict[str, Any]] = []
 
-    # Maven may leave XMLs from old classes in target when it runs without clean.
-    # Only count reports written after this run's artifact directory was created.
-    run_started_at = run_dir.stat().st_mtime if run_dir.exists() else datetime.now().timestamp()
-    backend_paths = [path for path in (repo / "backend/target/surefire-reports").glob("TEST-*.xml")
-                     if path.stat().st_mtime >= run_started_at]
+    # Local Maven invocations can leave reports for removed test classes in target.
+    # CI workspaces are fresh (Jenkins deleteDir / GitHub runner checkout), so retain
+    # all current-run Surefire reports there; the run artifact directory is created
+    # after the backend stage and is not a valid CI freshness boundary.
+    backend_paths = list((repo / "backend/target/surefire-reports").glob("TEST-*.xml"))
+    if os.getenv("CI_PROVIDER", "local").lower() == "local" and run_dir.exists():
+        run_started_at = run_dir.stat().st_mtime
+        backend_paths = [path for path in backend_paths if path.stat().st_mtime >= run_started_at]
     total, passed, failed, skipped = junit_counts(backend_paths)
     suites.append(suite_from_counts("Backend", "Maven/Surefire", total, passed, failed, skipped,
                                     outcomes.get("backend", "unknown"),
