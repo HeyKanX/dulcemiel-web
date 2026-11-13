@@ -15,7 +15,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from pages.auth_page import AuthPage
 from pages.catalog_page import CatalogPage
 
@@ -88,22 +87,28 @@ def verify_admin_denial(context):
 
 @when("recarga el catálogo con la sesión activa")
 def reload_catalog(context):
+    # Aísla únicamente las solicitudes disparadas por esta recarga.
+    context.browser.get_log("performance")
     context.browser.refresh()
-    WebDriverWait(context.browser, 12).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".catalog-header h2")))
+    WebDriverWait(context.browser, 12).until(
+        lambda browser: browser.find_elements(By.CSS_SELECTOR, ".product-card")
+        or browser.find_elements(By.CSS_SELECTOR, ".catalog-header + .alert-danger")
+        or browser.find_elements(By.CSS_SELECTOR, ".empty-state")
+    )
+    context.catalog_reload_events = context.browser.get_log("performance")
 
 
 
 @then("el catálogo continúa mostrando Miel QA")
 def verify_reloaded_catalog(context):
     context.catalog = CatalogPage(context.browser, context.web_url)
-    try:
-        context.catalog.product("Miel QA")
-    except TimeoutException:
+    product_cards = context.browser.find_elements(By.CSS_SELECTOR, ".product-card")
+    if not any("Miel QA" in card.text for card in product_cards):
         text = context.browser.find_element(By.TAG_NAME, "body").text
         api_events = []
         request_urls = {}
         try:
-            for entry in context.browser.get_log("performance"):
+            for entry in context.catalog_reload_events:
                 event = json.loads(entry["message"])["message"]
                 params = event.get("params", {})
                 request_id = params.get("requestId")
@@ -114,12 +119,29 @@ def verify_reloaded_catalog(context):
                         api_events.append({"event": "request", "url": request_urls[request_id]})
                 elif request_id in request_urls and event.get("method") == "Network.responseReceived":
                     response = params.get("response", {})
-                    api_events.append({"event": "response", "url": request_urls[request_id], "status": response.get("status")})
+                    record = {"event": "response", "url": request_urls[request_id], "status": response.get("status")}
+                    try:
+                        body = context.browser.execute_cdp_cmd("Network.getResponseBody", {"requestId": request_id})
+                        payload = json.loads(body.get("body", "{}"))
+                        products = payload.get("data", [])
+                        record["product_count"] = len(products) if isinstance(products, list) else None
+                        record["qa_product_present"] = any(
+                            item.get("nombre") == "Miel QA" for item in products if isinstance(item, dict)
+                        ) if isinstance(products, list) else False
+                    except Exception as exc:
+                        record["body_diagnostic"] = type(exc).__name__
+                    api_events.append(record)
                 elif request_id in request_urls and event.get("method") == "Network.loadingFailed":
                     api_events.append({"event": "failed", "url": request_urls[request_id], "reason": params.get("errorText")})
         except Exception as exc:
             api_events.append({"event": "diagnostic_error", "reason": type(exc).__name__})
+        browser_errors = [
+            {"level": item.get("level"), "message": item.get("message", "")[:240]}
+            for item in context.browser.get_log("browser")
+            if item.get("level") == "SEVERE"
+        ]
         assert False, (
             f"El catálogo no mostró Miel QA tras recargar; error_visible="
-            f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}"
+            f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}; "
+            f"browser_errors={browser_errors}"
         )

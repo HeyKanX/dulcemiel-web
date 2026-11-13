@@ -40,6 +40,15 @@ a {
   color: #221606;
 }
 
+.btn-link {
+  color: #1f6b4d;
+}
+
+.btn-link:hover,
+.btn-link:focus {
+  color: #174f39;
+}
+
 .form-control:focus,
 .form-select:focus {
   border-color: #d99a16;
