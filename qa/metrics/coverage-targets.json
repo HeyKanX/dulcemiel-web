@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "effective_from": "2026-11-13",
+  "policy": "Targets are staged thresholds, not claims of current coverage. Compare against a report from the same component, tool, branch, and build; do not average frontend and backend percentages.",
+  "stages": [
+    {
+      "stage": "baseline",
+      "purpose": "Freeze a comparable CI measurement before enforcing a new threshold.",
+      "gate": "report-only",
+      "components": {
+        "backend_java": {"line_pct": null, "branch_pct": null, "source": "first complete CI run after this file is introduced"},
+        "frontend_typescript": {"line_pct": null, "branch_pct": null, "source": "first complete CI run after this file is introduced"}
+      }
+    },
+    {
+      "stage": "next_increment",
+      "purpose": "Raise the measured baseline by five percentage points on critical validation code, then review exceptions before gating.",
+      "gate": "report-and-review",
+      "components": {
+        "backend_java": {"line_delta_pct_points": 5, "branch_delta_pct_points": 5, "priority": "stock, cart quantity, order creation, authorization and input validation"},
+        "frontend_typescript": {"line_delta_pct_points": 5, "branch_delta_pct_points": 5, "priority": "registration, login, cart, checkout and error-state handling"}
+      }
+    },
+    {
+      "stage": "enforcement",
+      "purpose": "Make the reviewed component threshold a Quality Gate only after the baseline and scope are stable.",
+      "gate": "enforce-no-regression; ratchet upward by at least five percentage points per agreed release",
+      "components": {
+        "backend_java": {"threshold_source": "approved same-commit CI baseline plus agreed increment"},
+        "frontend_typescript": {"threshold_source": "approved same-commit CI baseline plus agreed increment"}
+      }
+    }
+  ],
+  "interpretation": "Current coverage values must come from JaCoCo and Angular coverage reports. A null threshold means a numeric CI baseline has not yet been frozen; it does not mean zero coverage."
+}

@@ -92,6 +92,14 @@ jobs:
           docker exec "$QA_RUNNER_NAME" bash -lc
           'cd /workspace/backend && bash ./mvnw -B -ntp com.github.spotbugs:spotbugs-maven-plugin:4.10.5.0:spotbugs'
 
+      - name: Análisis estático — TypeScript y línea base
+        id: static_typescript
+        if: ${{ always() && steps.qa_runner.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          docker exec "$QA_RUNNER_NAME" bash -lc
+          'cd /workspace && python3 qa/metrics/run_typescript_analysis.py --output frontend/target/typescript-analysis.json'
+
       - name: Preparar entorno QA efímero en Docker Compose
         id: prepare_qa
         if: ${{ always() && steps.qa_dependencies.outcome == 'success' }}
@@ -213,6 +221,7 @@ jobs:
           CI_OUTCOME_FRONTEND_TESTS: ${{ steps.frontend_tests.outcome }}
           CI_OUTCOME_FRONTEND_BUILD: ${{ steps.frontend_build.outcome }}
           CI_OUTCOME_STATIC_ANALYSIS: ${{ steps.static_analysis.outcome }}
+          CI_OUTCOME_STATIC_TYPESCRIPT: ${{ steps.static_typescript.outcome }}
           CI_OUTCOME_QA_DEPENDENCIES: ${{ steps.qa_dependencies.outcome }}
           CI_OUTCOME_PREPARE_QA: ${{ steps.prepare_qa.outcome }}
           CI_OUTCOME_NEWMAN: ${{ steps.newman.outcome }}
@@ -240,6 +249,7 @@ jobs:
           FRONTEND_TESTS_OUTCOME: ${{ steps.frontend_tests.outcome }}
           FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
           STATIC_ANALYSIS_OUTCOME: ${{ steps.static_analysis.outcome }}
+          STATIC_TYPESCRIPT_OUTCOME: ${{ steps.static_typescript.outcome }}
           PREPARE_QA_OUTCOME: ${{ steps.prepare_qa.outcome }}
           NEWMAN_OUTCOME: ${{ steps.newman.outcome }}
           BEHAVE_OUTCOME: ${{ steps.behave.outcome }}
@@ -261,7 +271,7 @@ jobs:
           for result in \
             "$RUNNER_IMAGE_OUTCOME" "$QA_NETWORK_OUTCOME" "$QA_RUNNER_OUTCOME" \
             "$QA_DEPENDENCIES_OUTCOME" "$BACKEND_OUTCOME" "$FRONTEND_TESTS_OUTCOME" \
-            "$FRONTEND_BUILD_OUTCOME" "$STATIC_ANALYSIS_OUTCOME" "$PREPARE_QA_OUTCOME" "$NEWMAN_OUTCOME" \
+            "$FRONTEND_BUILD_OUTCOME" "$STATIC_ANALYSIS_OUTCOME" "$STATIC_TYPESCRIPT_OUTCOME" "$PREPARE_QA_OUTCOME" "$NEWMAN_OUTCOME" \
             "$BEHAVE_OUTCOME" "$COMPATIBILITY_OUTCOME" "$ACCESSIBILITY_OUTCOME" "$PENDING_PLAYWRIGHT_OUTCOME" \
             "$K6_SMOKE_OUTCOME" "$K6_BASELINE_OUTCOME" "$K6_MODERATE_OUTCOME" \
             "$K6_STRESS_OUTCOME" "$K6_SPIKE_OUTCOME" "$K6_SUSTAINED_OUTCOME" \
@@ -288,6 +298,7 @@ jobs:
             backend/target/surefire-reports/**
             backend/target/site/jacoco/**
             backend/target/spotbugsXml.xml
+            frontend/target/typescript-analysis.json
             frontend/coverage/**
             frontend/dist/**
             qa/artifacts/**

@@ -1,6 +1,6 @@
 # Esquema propuesto de métricas de calidad — Dulce Miel
 
-**Estado:** generador y etapas de análisis/cobertura integrados en Jenkins y GitHub Actions; línea base local medida el 12-11-2026. La publicación real de cada build debe verificarse en el artefacto de la plataforma.
+**Estado:** generador y etapas de análisis/cobertura integrados en Jenkins y GitHub Actions; build 15 medido el 13-11-2026. El analizador de TypeScript y su línea base vacía se añadieron después de ese build y se validarán en la siguiente corrida completa. La publicación real de cada build debe verificarse en el artefacto de la plataforma.
 **Alcance:** pruebas automatizadas ejecutadas por Jenkins o GitHub Actions. Los recorridos manuales quedan separados y no se mezclan en los porcentajes del pipeline.
 
 ## 1. Formatos de salida
@@ -131,3 +131,13 @@ La línea base local del 12-11-2026 mide cobertura de JaCoCo y Angular, cuenta h
 Los recorridos manuales de teclado y Narrador no entran al resultado de los pipelines; se conservan en TestLink como evidencia manual. La tasa de automatización se calcula como casos automatizados y enlazados / casos aplicables (casos manuales puros excluidos; brechas incluidas). La cobertura de ejecución del build es un indicador distinto: IDs del catálogo con resultado actual / total del catálogo.
 
 La línea base local no sustituye una corrida de Jenkins o GitHub Actions: el reporte la etiqueta como local y no publica resultados a TestLink. Revisar los artefactos del primer build de cada plataforma antes de comparar tendencias; no reutilizar cifras históricas de otros commits.
+
+## 7. Interpretación obligatoria y trazabilidad a objetivos
+
+Todo valor de informe debe incluir su unidad, numerador, denominador y corrida fuente. La interpretación debe explicar qué representa el número, qué permite concluir y cuál es su límite. Las tablas por suite dicen si la unidad es método JUnit, escenario Gherkin, solicitud HTTP, aserción, caso TestLink, ruta analizada o perfil K6; esas unidades no se suman entre sí sin conversión válida.
+
+Cada resultado enlaza los objetivos que mide: OE1 requiere el total canónico de HU/CA para calcular cobertura; OE2 interpreta el diseño por caso y criterio; OE3 usa métodos de prueba y elementos de código cubiertos; OE4 informa pass/fail por caso funcional; OE5 explica cada perfil no funcional y sus umbrales; OE6 calcula automatización sobre casos aplicables y evidencia de CI; OE7 reúne métricas con sus fórmulas y límites. La tabla OE presenta la lectura del dato de la corrida. No se publica un porcentaje global de objetivo cuando la rúbrica no define ponderaciones.
+
+Los estados `N/A`, `no ejecutado`, `bloqueado` y `no aprobado` tienen significados distintos. `N/A` indica que no existe una base válida para calcular un indicador; `no ejecutado` significa que no hubo ejecución; `bloqueado` indica que el caso no pudo correr; `no aprobado` significa que se ejecutó y el resultado observado incumplió el esperado. No se convierten entre sí para mejorar una tasa.
+
+Para análisis estático, SpotBugs revisa bytecode Java y clasifica alertas por patrón y prioridad; TypeScript Compiler entrega diagnósticos `TS####` con severidad técnica y comparación contra baseline por archivo, regla y mensaje. La prioridad/severidad del analizador no equivale a severidad del defecto del producto: el registro de defectos conserva el triage separado.

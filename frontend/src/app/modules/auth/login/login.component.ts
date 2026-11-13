@@ -15,16 +15,16 @@ import { AuthService } from '../../../autenticaciones/auth.service';
 
         <form [formGroup]="form" (ngSubmit)="submit()">
           <div class="mb-3">
-            <label class="form-label" for="login-email">Email</label>
-            <input id="login-email" class="form-control" type="email" formControlName="email" autocomplete="email">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" formControlName="email" autocomplete="email">
             <small class="text-danger" *ngIf="form.controls.email.touched && form.controls.email.invalid">
               Ingresa un email valido.
             </small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label" for="login-password">Contrasena</label>
-            <input id="login-password" class="form-control" type="password" formControlName="password" autocomplete="current-password">
+            <label class="form-label">Contrasena</label>
+            <input class="form-control" type="password" formControlName="password" autocomplete="current-password">
             <small class="text-danger" *ngIf="form.controls.password.touched && form.controls.password.invalid">
               La contrasena es requerida.
             </small>

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "baseline_name": "Dulce Miel TypeScript diagnostics",
+  "baseline_commit": "d7451626eb73977af81c4d6f54988120d01e7094",
+  "scope": "frontend/tsconfig.app.json",
+  "status": "verified empty baseline on restored frontend commit; TypeScript 5.2.2 returned zero diagnostics",
+  "rule": "A baseline finding is identified by normalized file path, TS diagnostic rule, and normalized message; line shifts do not create a new finding.",
+  "findings": []
+}

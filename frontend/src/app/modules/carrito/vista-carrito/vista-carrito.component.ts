@@ -13,8 +13,8 @@ import { CarritoService } from '../../../servicios/carrito.service';
       <button class="btn btn-outline-danger" type="button" [disabled]="items.length === 0" (click)="vaciar()">Vaciar carrito</button>
     </section>
 
-    <div class="alert alert-danger" role="alert" *ngIf="error">{{ error }}</div>
-    <div class="alert alert-success" role="status" aria-live="polite" aria-atomic="true" *ngIf="mensaje">{{ mensaje }}</div>
+    <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-success" *ngIf="mensaje">{{ mensaje }}</div>
 
     <div class="cart-layout" *ngIf="items.length > 0; else empty">
       <section class="items">
@@ -25,8 +25,7 @@ import { CarritoService } from '../../../servicios/carrito.service';
             <h2>{{ item.nombre }}</h2>
             <span>{{ item.precio | currency:'PEN':'S/ ':'1.2-2' }} c/u</span>
           </div>
-          <label class="visually-hidden" [for]="'cart-quantity-' + item.id">Cantidad de {{ item.nombre }}</label>
-          <input [id]="'cart-quantity-' + item.id" class="form-control" type="number" min="1" [attr.aria-label]="'Cantidad de ' + item.nombre" [ngModel]="item.cantidad" (ngModelChange)="actualizar(item, $event)">
+          <input class="form-control" type="number" min="1" [ngModel]="item.cantidad" (ngModelChange)="actualizar(item, $event)">
           <strong>{{ item.cantidad * item.precio | currency:'PEN':'S/ ':'1.2-2' }}</strong>
           <button class="btn btn-sm btn-outline-danger" type="button" (click)="eliminar(item.id)">Eliminar</button>
         </article>

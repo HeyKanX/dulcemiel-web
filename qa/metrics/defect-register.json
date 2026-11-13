@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": "Dulce Miel",
   "environment": "QA local efímero phase2-47311c38; frontend 127.0.0.1:54200, API 127.0.0.1:55001 y SQL aislado del proyecto dm-phase2-47311c38",
   "detected_commit": "885fe83e069724d622733f8d2668fee957d7a486 (base; correcciones locales sin commit)",
@@ -24,7 +24,15 @@
       "evidence_cases": [
         "TC-NF-ACC-004"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-001",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration"
     },
     {
       "defect_id": "DEF-ACC-002",
@@ -39,7 +47,15 @@
       "evidence_cases": [
         "TC-NF-ACC-008"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-002",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration"
     },
     {
       "defect_id": "DEF-ACC-003",
@@ -54,7 +70,15 @@
       "evidence_cases": [
         "TC-NF-ACC-009"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-003",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration"
     },
     {
       "defect_id": "DEF-ACC-004",
@@ -74,7 +98,15 @@
       "evidence_files": [
         "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
       ],
-      "first_observed_run": "github-actions-build-8-2026-11-13"
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-004",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     },
     {
       "defect_id": "DEF-ACC-005",
@@ -92,7 +124,15 @@
       "evidence_files": [
         "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
       ],
-      "first_observed_run": "github-actions-build-8-2026-11-13"
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-005",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     },
     {
       "defect_id": "DEF-ACC-006",
@@ -110,17 +150,25 @@
       "evidence_files": [
         "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
       ],
-      "first_observed_run": "github-actions-build-8-2026-11-13"
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-006",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     },
     {
       "defect_id": "DEF-F-004",
-      "status": "confirmed_fixed_local_pending_pipeline",
+      "status": "confirmed_open",
       "severity": "Media",
       "title": "El backend acepta cantidad cero al agregar producto al carrito",
       "case_ids": [
         "TC-F-010"
       ],
-      "detail": "Build 8 devolvió HTTP 201 y aceptó cantidad 0. Se añadió validación previa a SQL para cantidades <1 y parseo exacto de enteros. Maven 28/28 (incluye 7 pruebas SQL reales) y Newman 32 solicitudes/33 aserciones pasaron después del cambio local. Pendiente de validación remota en Jenkins/GitHub.",
+      "detail": "La versión base recibió HTTP 201 ante cantidad cero y aceptó la operación (build 8). Una validación local fue añadida después y pasó pruebas locales; se retiró de la rama de evaluación para restablecer el comportamiento base y observar el fallo real, conforme a la instrucción del equipo. La versión evaluada vuelve a considerarse abierta hasta una corrección aprobada por el equipo.",
       "source": "backend/src/main/java/com/dulcemiel/backend/controller/CarritoController.java:49-72",
       "evidence_cases": [
         "TC-F-010"
@@ -133,17 +181,25 @@
         "backend/target/surefire-reports/com.dulcemiel.backend.controller.CarritoControllerAuditTest.txt",
         "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
         "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
-      ]
+      ],
+      "module": "carrito / reglas de negocio",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-F-004",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     },
     {
       "defect_id": "DEF-F-005",
-      "status": "confirmed_fixed_local_pending_pipeline",
+      "status": "confirmed_open",
       "severity": "Media",
       "title": "Crear producto sin imagen provocaba error SQL 500",
       "case_ids": [
         "TC-F-017"
       ],
-      "detail": "SQL Server rechazaba el NULL no tipado de imagen_data porque JdbcTemplate lo enviaba como NVARCHAR. Se tipó explícitamente el parámetro como VARBINARY. El alta sin imagen se verificó contra SQL Server real y la colección Newman quedó con 0 fallos. Pendiente de validación remota en Jenkins/GitHub.",
+      "detail": "La evidencia local previa mostró HTTP 500 al crear un producto sin imagen porque SQL Server rechazaba el parámetro NULL no tipado. La corrección local de VARBINARY fue retirada de la rama de evaluación para conservar la versión base con su fallo visible; queda abierta hasta una corrección aprobada por el equipo.",
       "source": "backend/src/main/java/com/dulcemiel/backend/controller/ProductosController.java",
       "evidence_cases": [
         "TC-F-017"
@@ -152,7 +208,15 @@
       "resolution_evidence": [
         "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
         "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
-      ]
+      ],
+      "module": "productos / administración",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-F-005",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     },
     {
       "defect_id": "DEF-INT-006",
@@ -162,17 +226,29 @@
       "case_ids": [
         "TC-NF-INT-002"
       ],
-      "detail": "Reproducido en el stack aislado: tras recargar la vista, no se observa una solicitud del navegador a /api/productos y la página muestra 'No se pudieron cargar los productos'. La consulta directa del mismo endpoint responde 200 y devuelve siete productos. La causa en el arranque/ruta SPA aún no está aislada; no se asigna como defecto confirmado de backend.",
+      "detail": "En build 15, tras recargar /productos con sesión activa, el navegador mostró “No se pudieron cargar los productos” y no presentó Miel QA. La sonda directa del runner recibió HTTP 200 y encontró Miel QA en /api/productos; la captura de eventos API del navegador quedó vacía. El caso falló; la causa raíz y la ubicación (cliente, integración o mecanismo de captura) siguen por determinar, por lo que no se atribuye un defecto de backend confirmado.",
       "source": "frontend/src/app/modules/productos/listado-productos/listado-productos.component.ts; integración Angular y carga de ruta",
       "evidence_cases": [
         "TC-NF-INT-002"
       ],
       "evidence_files": [
         "qa/artifacts/phase2-47311c38/behave-full/carrito_pedidos.Compra y permisos del cliente.xml",
-        "qa/artifacts/phase2-47311c38/behave/phase2-fix_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.txt"
+        "qa/artifacts/phase2-47311c38/behave/phase2-fix_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.txt",
+        "GitHub Actions run 43408870524: qa/artifacts/build-15-087d8cf9/ui-behave/TESTS-carrito_pedidos.xml",
+        "GitHub Actions run 43408870524: screenshot build-15-087d8cf9_failed_TC-NF-INT-002...png"
       ],
       "first_observed_run": "github-actions-build-8-2026-11-13",
-      "last_reproduced_run": "phase2-47311c38-2026-11-13"
+      "last_reproduced_run": "GitHub Actions build 15 / run 43408870524 / 2026-11-13",
+      "module": "catálogo / integración frontend-backend",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-INT-006",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
     }
-  ]
+  ],
+  "date_policy": "recorded_on es la fecha del registro estructurado; first_observed_on queda null cuando no consta en la evidencia original. No sustituir una fecha desconocida por la fecha de registro.",
+  "deduplication_policy": "Un registro por defecto raíz confirmado, identificado por defect_id/deduplication_key; varios casos asociados al mismo defecto no incrementan el conteo."
 }

@@ -22,7 +22,11 @@
         "TC-NF-ACC-009": "f",
         "TC-NF-ACC-012": "p",
         "TC-NF-ACC-013": "p"
-      }
+      },
+      "commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+      "environment": "QA local aislado; Chromium/Playwright; misma semilla SQL QA; ocho IDs Playwright; ejecución secuencial.",
+      "retry_count": 0,
+      "retry_policy": "Sin reintentos configurados."
     },
     {
       "run_id": "local-phase1-flaky-2",
@@ -36,7 +40,11 @@
         "TC-NF-ACC-009": "f",
         "TC-NF-ACC-012": "p",
         "TC-NF-ACC-013": "p"
-      }
+      },
+      "commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+      "environment": "QA local aislado; Chromium/Playwright; misma semilla SQL QA; ocho IDs Playwright; ejecución secuencial.",
+      "retry_count": 0,
+      "retry_policy": "Sin reintentos configurados."
     },
     {
       "run_id": "local-phase1-flaky-3",
@@ -50,7 +58,25 @@
         "TC-NF-ACC-009": "f",
         "TC-NF-ACC-012": "p",
         "TC-NF-ACC-013": "p"
-      }
+      },
+      "commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+      "environment": "QA local aislado; Chromium/Playwright; misma semilla SQL QA; ocho IDs Playwright; ejecución secuencial.",
+      "retry_count": 0,
+      "retry_policy": "Sin reintentos configurados."
     }
-  ]
+  ],
+  "control": {
+    "commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+    "environment": "QA local aislado; Chromium/Playwright; misma semilla SQL QA; ocho IDs Playwright; ejecución secuencial.",
+    "repeat_count": 3,
+    "case_count_per_run": 8,
+    "retry_policy": "Sin reintentos configurados; retries por corrida: 0.",
+    "comparison_rule": "Solo comparar las tres corridas con estos hashes de código y el ambiente indicado. Una ejecución en otro commit no se mezcla en este estimado."
+  },
+  "result": {
+    "cases_repeated": 8,
+    "cases_flaky": 0,
+    "flaky_rate_pct": 0.0,
+    "interpretation": "0/8 = 0% en esta muestra significa que los ocho casos conservaron el mismo estado en las tres repeticiones controladas. No afirma estabilidad de todas las suites ni de commits distintos."
+  }
 }

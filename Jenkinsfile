@@ -64,6 +64,14 @@ pipeline {
             }
         }
 
+        stage('Análisis estático - TypeScript y línea base') {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'TypeScript detectó errores nuevos o no pudo compararse con la línea base; se conservará el reporte y continuarán las suites.') {
+                    sh 'python3 qa/metrics/run_typescript_analysis.py --output frontend/target/typescript-analysis.json'
+                }
+            }
+        }
+
         stage('Instalar herramientas de QA') {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'No quedaron listas las dependencias QA; las suites dependientes se marcarán como omitidas.') {
@@ -252,7 +260,7 @@ pipeline {
                     echo 'No se generaron reportes JUnit de QA en esta corrida; revisa si la preparación del entorno fue omitida o falló.'
                 }
             }
-            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,backend/target/site/jacoco/**,backend/target/spotbugsXml.xml,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/metrics/reports/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,backend/target/site/jacoco/**,backend/target/spotbugsXml.xml,frontend/target/typescript-analysis.json,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/metrics/reports/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
             sh 'if [ -f qa/.local/jenkins-run.json ]; then bash qa/jenkins/cleanup-qa.sh; fi'
         }
     }

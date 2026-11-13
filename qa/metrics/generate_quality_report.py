@@ -434,15 +434,28 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
     fail_rate = pct(linked["failed"], total_linked)
 
     coverage = {"backend": jacoco_coverage(repo), "frontend": frontend_coverage(repo)}
+    coverage_targets = read_json(repo / "qa/metrics/coverage-targets.json") or {}
     static_path = repo / "backend/target/spotbugsXml.xml"
+    typescript_path = repo / "frontend/target/typescript-analysis.json"
+    typescript_report = read_json(typescript_path) or {}
     static_analysis: dict[str, Any] = {
         "status": "partial",
-        "tools": ["SpotBugs"],
+        "tools": ["SpotBugs", "TypeScript Compiler"],
         "ci_step_outcome": outcomes.get("static_analysis", "unknown"),
-        "scope": "Bytecode Java del backend; el frontend TypeScript no tiene analizador estático dedicado conectado.",
+        "ci_typescript_step_outcome": outcomes.get("static_typescript", "unknown"),
+        "scope": "SpotBugs revisa bytecode Java. TypeScript Compiler analiza tipos del frontend; cada TS#### se publica como regla/diagnóstico y se compara con una línea base versionada.",
         "findings_by_priority": {},
         "finding_count": None,
         "evidence": "backend/target/spotbugsXml.xml" if static_path.is_file() else None,
+        "typescript": {
+            "status": typescript_report.get("status", "not_reported"),
+            "finding_count": typescript_report.get("finding_count"),
+            "new_finding_count": typescript_report.get("new_finding_count"),
+            "counts_by_severity_rule_and_baseline": typescript_report.get("counts_by_severity_rule_and_baseline", []),
+            "baseline_file": typescript_report.get("baseline_file", "qa/metrics/typescript-baseline.json"),
+            "evidence": "frontend/target/typescript-analysis.json" if typescript_path.is_file() else None,
+            "interpretation": typescript_report.get("interpretation", "No hay reporte TypeScript para esta corrida."),
+        },
     }
     if static_path.is_file():
         try:
@@ -453,13 +466,13 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
                 findings[priority] = findings.get(priority, 0) + 1
             static_analysis["findings_by_priority"] = findings
             static_analysis["finding_count"] = sum(findings.values())
-            static_analysis["status"] = "reported"
+            static_analysis["status"] = "reported" if typescript_report.get("status") in ("passed", "failed") else "partial"
             static_analysis["note"] = "Prioridad del analizador, no severidad confirmada; cada hallazgo requiere triage."
         except (ET.ParseError, OSError) as exc:
             static_analysis["status"] = "invalid_report"
             static_analysis["reason"] = str(exc)
     else:
-        static_analysis["status"] = "not_reported"
+        static_analysis["status"] = "partial" if typescript_path.is_file() else "not_reported"
         static_analysis["reason"] = "No existe reporte SpotBugs en esta corrida."
 
     defect_register = read_json(repo / "qa/metrics/defect-register.json") or {}
@@ -538,6 +551,7 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
         "suites": suites,
         "objective_mapping": read_objective_map(repo),
         "coverage": coverage,
+        "coverage_targets": coverage_targets,
         "static_analysis": static_analysis,
         "defects": {
             "confirmed_count": len(matched_defects),
@@ -561,6 +575,16 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
             "runs": len(runs),
             "fingerprint_matches": fingerprint_matches,
             "reason": "Mismo fingerprint de código de aplicación y runner; tasa = casos con estados distintos / casos repetidos." if fingerprint_matches else "El código/runner actual difiere del fingerprint de la línea base; repetir con versión y entorno constantes.",
+            "historical_controlled_baseline": {
+                "commit": stability_data.get("control", {}).get("commit"),
+                "environment": stability_data.get("control", {}).get("environment"),
+                "cases_repeated": stability_data.get("result", {}).get("cases_repeated"),
+                "cases_flaky": stability_data.get("result", {}).get("cases_flaky"),
+                "rate_pct": stability_data.get("result", {}).get("flaky_rate_pct"),
+                "runs": stability_data.get("control", {}).get("repeat_count", len(runs)),
+                "retries": stability_data.get("control", {}).get("retry_policy"),
+                "interpretation": stability_data.get("result", {}).get("interpretation"),
+            },
         },
         "automation": cases,
         "k6": k6_profiles,
@@ -576,7 +600,11 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
             "artifact_files": [
                 "backend/target/surefire-reports/",
                 "backend/target/site/jacoco/",
+                "backend/target/spotbugsXml.xml",
+                "frontend/target/typescript-analysis.json",
                 "frontend/coverage/",
+                "qa/metrics/typescript-baseline.json",
+                "qa/metrics/coverage-targets.json",
                 str(run_dir.relative_to(repo)).replace("\\", "/") if run_dir.is_relative_to(repo) else str(run_dir),
                 (current_run_path.relative_to(repo).as_posix()
                  if current_run and current_run_path.is_relative_to(repo) else str(current_run_path)),
@@ -611,18 +639,53 @@ def html_report(summary: dict[str, Any]) -> str:
             coverage_cards.append(f"<li><b>{html.escape(data['component'])}:</b> {html.escape(values)}</li>")
         else:
             coverage_cards.append(f"<li><b>{html.escape(component)}:</b> N/A — {html.escape(data.get('reason', 'Reporte no disponible.'))}</li>")
+    coverage_stage_rows = "".join(
+        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+            html.escape(str(stage.get("stage", ""))),
+            html.escape(str(stage.get("purpose", ""))),
+            html.escape(str(stage.get("gate", ""))),
+            html.escape(
+                f"Backend +{stage.get('components', {}).get('backend_java', {}).get('line_delta_pct_points', 'N/A')} p.p. líneas/ramas; "
+                f"Frontend +{stage.get('components', {}).get('frontend_typescript', {}).get('line_delta_pct_points', 'N/A')} p.p. líneas/ramas"
+                if stage.get("stage") == "next_increment" else
+                "Umbral desde primera corrida completa comparable" if stage.get("stage") == "baseline" else
+                "Umbral por componente aprobado desde su baseline"
+            ),
+        ) for stage in summary.get("coverage_targets", {}).get("stages", [])
+    )
     static = summary["static_analysis"]
     priorities = ", ".join(f"P{priority}: {count}" for priority, count in sorted(static.get("findings_by_priority", {}).items())) or "sin hallazgos reportados"
+    ts_analysis = static.get("typescript", {})
+    ts_rules = ", ".join(
+        f"{item['rule']} ({item['severity']}, {item['baseline_status']}): {item['count']}"
+        for item in ts_analysis.get("counts_by_severity_rule_and_baseline", [])
+    ) or "sin diagnósticos reportados"
     automation_class = summary["automation"].get("automation_classification", {})
     defects = summary["defects"]
     flaky = summary["flaky_tests"]
+    flaky_current_text = (
+        "N/A porque el fingerprint de esta corrida no coincide con la muestra controlada."
+        if flaky["rate_pct"] is None
+        else f"{flaky['rate_pct']:.2f}% ({flaky['cases_flaky']}/{flaky['cases_repeated']} casos; {flaky['runs']} corridas)"
+    )
+    automation_pct_text = "N/A" if summary["automation"]["automation_rate_pct"] is None else f"{summary['automation']['automation_rate_pct']:.2f}%"
     objective_map = summary.get("objective_mapping", {})
+    objective_readings = {
+        "OE1": f"El catálogo enlaza casos con HU/criterios; hay {summary['automation']['catalog_case_count']} IDs identificados. Ese conteo demuestra trazabilidad del catálogo, pero no cobertura de requisitos: falta el total canónico de HU y criterios para dividir casos/requisitos cubiertos entre los existentes.",
+        "OE2": f"La unidad es el caso de prueba: {summary['automation']['catalog_case_count']} IDs únicos en el catálogo. La integridad de campos y los conteos no demuestran por sí solos que cada paso sea correcto; la revisión semántica se contrasta con su criterio asociado.",
+        "OE3": "Los conteos JUnit/Surefire representan pruebas ejecutadas, aprobadas, fallidas u omitidas; JaCoCo representa líneas/ramas/instrucciones cubiertas sobre instrumentadas. Son unidades distintas: cobertura alta no sustituye el resultado de aserciones ni prueba por sí sola el ciclo TDD.",
+        "OE4": f"Para esta corrida: {rates['passed']} aprobados y {rates['failed']} no aprobados entre {rates['total_executed']} IDs automatizados únicos con estado. Pass/fail rate describe el resultado observado; cada no aprobado requiere clasificar si proviene del producto, la prueba, datos o entorno antes de contarlo como defecto.",
+        "OE5": f"K6 presenta {sum(item.get('status') == 'passed' for item in summary['k6'])} perfiles aprobados de {len(summary['k6'])} con un resumen interpretable; p95, error de solicitudes, VUs y duración describen carga en el ambiente QA. Accesibilidad, seguridad y compatibilidad tienen resultados separados y solo cubren rutas/escenarios ejecutados.",
+        "OE6": f"La tasa de automatización es {automation_pct_text} = {automation_class.get('automated_linked', 0)} casos automatizados/enlazados ÷ {automation_class.get('applicable_cases', 0)} casos aplicables × 100. Las pruebas manuales puras no están en el denominador; las brechas sí. La presencia de Jenkins/GitHub Actions y Docker se evidencia en sus builds y artefactos.",
+        "OE7": f"Se leen en conjunto cobertura, resultados pass/fail, análisis estático, defectos confirmados, estabilidad y automatización. En esta corrida, la tasa de defectos confirmados es {defects['rate_per_100_executed_cases'] if defects['rate_per_100_executed_cases'] is not None else 'N/A'} por cada 100 casos únicos ejecutados; defect leakage queda N/A sin release y periodo observados. No existe un porcentaje global de OE7 mientras la rúbrica no asigne ponderaciones.",
+    }
     objective_rows = "".join(
-        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
             html.escape(str(item.get("id", ""))),
             html.escape(str(item.get("name", ""))),
             html.escape(str(item.get("target", "N/A"))),
             html.escape("; ".join(item.get("indicators", []))),
+            html.escape(objective_readings.get(str(item.get("id", "")), "No hay interpretación dinámica configurada.")),
             html.escape(str(item.get("limitation") or "Ver indicadores en las métricas y evidencias del build.")),
         ) for item in objective_map.get("objectives", [])
     )
@@ -649,21 +712,29 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <div class="card"><div>No aprobados</div><div class="metric">{rates['failed']}</div></div>
 <div class="card"><div>Pass rate / fail rate</div><div class="metric">{('N/A' if rates['pass_rate_pct'] is None else f"{rates['pass_rate_pct']:.2f}% / {rates['fail_rate_pct']:.2f}%")}</div></div>
 </div>
-<p class="na">Los porcentajes anteriores usan IDs únicos automatizados con estado en el resumen de esta corrida. No son tasa de defectos ni incluyen pruebas manuales.</p>
+<p><b>Qué significan estos cuatro valores:</b> el total cuenta IDs de caso únicos que esta corrida automatizada vinculó con TestLink y dejó en aprobado o no aprobado; si un ID aparece más de una vez, se cuenta una vez. “Aprobados” y “No aprobados” son esos resultados observados. El pass rate se calcula como aprobados ÷ (aprobados + no aprobados) × 100; el fail rate usa no aprobados en el numerador y el mismo denominador. Casos omitidos, bloqueados, manuales y sin resultado no entran en ese cálculo. Por eso el fail rate no equivale a tasa de defectos: un fallo puede provenir del producto, el script, los datos o el entorno y requiere clasificación.</p>
 <h2>Resultados por suite</h2><table><thead><tr><th>Suite</th><th>Herramienta</th><th>Estado</th><th>Aprobados</th><th>Fallidos</th><th>Pass rate</th></tr></thead><tbody>{suite_rows}</tbody></table>
-<h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul><p>No se promedian componentes con denominadores distintos.</p>
+<p><b>Cómo leer una fila:</b> la suite es el grupo ejecutado y la herramienta identifica cómo se ejecutó. Los conteos aprobados/fallidos dependen del tipo de reporte de esa suite (por ejemplo, pruebas JUnit, casos Gherkin o aserciones Newman); no deben sumarse entre suites como si fueran la misma unidad. El pass rate de cada suite es aprobados ÷ (aprobados + fallidos). Bloqueados y omitidos quedan fuera y deben revisarse aparte. Un estado fallido del build significa que al menos una condición de calidad no se cumplió; no prueba por sí solo que todas las suites fallaron.</p>
+<h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul>
+<p><b>Significado:</b> cada porcentaje divide elementos cubiertos por elementos instrumentados de ese mismo componente y tipo (líneas, ramas, instrucciones o funciones, según reporte). El valor describe cuánto código alcanzaron las pruebas, no si ese código funciona correctamente ni cuántos casos del catálogo se ejecutaron. Backend Java y frontend Angular tienen denominadores distintos, por lo que no se promedian en una cifra general.</p>
+<h3>Metas escalonadas</h3><table><thead><tr><th>Etapa</th><th>Propósito</th><th>Uso en el gate</th><th>Meta por componente</th></tr></thead><tbody>{coverage_stage_rows or '<tr><td colspan="4">No hay etapas de cobertura definidas.</td></tr>'}</tbody></table>
+<p>{html.escape(str(summary.get('coverage_targets', {}).get('interpretation', 'La meta de cobertura debe compararse con el mismo componente y herramienta.')))}</p>
+<p><b>Relación con objetivos:</b> esta cobertura aporta evidencia a OE3 (pruebas unitarias/integración) y OE7 (métricas); no demuestra por sí sola cumplimiento completo de ninguno.</p>
 <h2>K6</h2><table><thead><tr><th>Perfil</th><th>Estado</th><th>VUs máx.</th><th>Duración (s)</th><th>API p95 (ms)</th><th>Error de solicitudes</th></tr></thead><tbody>{k6_rows}</tbody></table>
+<p><b>Significado de los datos:</b> el perfil identifica el patrón de carga; VUs son usuarios virtuales simultáneos configurados; duración es el tiempo medido en segundos; API p95 es el tiempo de respuesta bajo el cual terminó el 95% de las solicitudes medidas; la tasa de error es solicitudes fallidas ÷ solicitudes totales × 100. “Aprobado” solo significa que el perfil produjo un resumen válido y todos sus umbrales configurados se cumplieron. Los seis perfiles aportan evidencia a OE5; los resúmenes de carga y sus umbrales versionados también alimentan OE7. No se generaliza el resultado a producción.</p>
 <h2>Métricas calculadas y límites de evidencia</h2><ul>
-<li><b>Análisis estático:</b> {html.escape(str(static.get('finding_count') if static.get('finding_count') is not None else 'N/A'))} hallazgos SpotBugs ({html.escape(priorities)}); alcance: {html.escape(static.get('scope', 'N/A'))} Las prioridades del analizador no equivalen a severidad confirmada.</li>
-<li><b>Defectos confirmados:</b> {defects['confirmed_count']} asociados a fallos del resumen ({defects['rate_per_100_executed_cases'] if defects['rate_per_100_executed_cases'] is not None else 'N/A'} por cada 100 casos automatizados ejecutados; distribución: {html.escape(json.dumps(defects['severity_distribution'], ensure_ascii=False))}). Total triado abierto: {defects['triaged_confirmed_open_total']}.</li>
-<li><b>Defect leakage:</b> No medible; falta un registro de defectos posliberación asociado a versión y periodo de observación. No se interpreta ausencia de reporte como cero.</li>
-<li><b>Flaky rate:</b> {('N/A por cambio de fingerprint' if flaky['rate_pct'] is None else f"{flaky['rate_pct']:.2f}% ({flaky['cases_flaky']}/{flaky['cases_repeated']} casos; {flaky['runs']} corridas)")}.</li>
-<li><b>Automatización del catálogo:</b> {('N/A' if summary['automation']['automation_rate_pct'] is None else f"{summary['automation']['automation_rate_pct']:.2f}% ({automation_class.get('automated_linked', 0)}/{automation_class.get('applicable_cases', 0)} casos automatizables)")}; {automation_class.get('automation_gap', 0)} brechas y {automation_class.get('manual_only', 0)} solo manuales.</li>
-<li><b>Cobertura de ejecución del catálogo en este build:</b> {('N/A' if summary['automation']['execution_coverage_pct'] is None else f"{summary['automation']['execution_coverage_pct']:.2f}% ({summary['automation']['unique_cases_with_automated_result_this_build']}/{summary['automation']['catalog_case_count']})")}.</li>
+<li><b>Análisis estático Java:</b> {html.escape(str(static.get('finding_count') if static.get('finding_count') is not None else 'N/A'))} hallazgos SpotBugs ({html.escape(priorities)}). P1/P2/P3 son prioridades asignadas por SpotBugs, no severidad confirmada del defecto. Los hallazgos deben revisarse por regla y compararse con la línea base; alertas repetidas no son automáticamente defectos nuevos.</li>
+<li><b>Análisis estático TypeScript:</b> {html.escape(str(ts_analysis.get('finding_count') if ts_analysis.get('finding_count') is not None else 'N/A'))} diagnósticos, {html.escape(str(ts_analysis.get('new_finding_count') if ts_analysis.get('new_finding_count') is not None else 'N/A'))} nuevos frente a baseline; detalle por regla/severidad/estado: {html.escape(ts_rules)}. TS#### es el código de diagnóstico del compilador; “error” indica severidad técnica del compilador y no impacto de negocio. El estado nuevo/existente compara archivo, regla y mensaje. Evidencia: {html.escape(str(ts_analysis.get('evidence') or 'reporte ausente'))}.</li>
+<li><b>Defectos confirmados:</b> {defects['confirmed_count']} defectos únicos vinculados a IDs fallidos del resumen; tasa {defects['rate_per_100_executed_cases'] if defects['rate_per_100_executed_cases'] is not None else 'N/A'} por cada 100 casos automatizados únicos ejecutados (defectos confirmados ÷ {defects.get('denominator_executed_unique_cases', 0)} casos ejecutados × 100). Distribución de severidad: {html.escape(json.dumps(defects['severity_distribution'], ensure_ascii=False))}; total triado abierto en el registro: {defects['triaged_confirmed_open_total']}. El total abierto es acumulado y no se usa como numerador de esta corrida salvo que coincida con un caso fallido actual.</li>
+<li><b>Defect leakage:</b> N/A, no medible. La fórmula es defectos confirmados posteriores a la liberación ÷ defectos confirmados preliberación y posliberación × 100. Falta asociar incidencias a una versión liberada y a un periodo de observación; N/A significa ausencia de base válida, no cero defectos.</li>
+<li><b>Flaky rate del commit actual:</b> {html.escape(flaky_current_text)} Un caso inestable cambia entre aprobado y no aprobado al repetirlo con el mismo código, datos y entorno. Fórmula: casos inestables ÷ casos repetidos comparables × 100. Muestra histórica controlada: {html.escape(str(flaky.get('historical_controlled_baseline', {}).get('cases_flaky', 'N/A')))} de {html.escape(str(flaky.get('historical_controlled_baseline', {}).get('cases_repeated', 'N/A')))} casos en {html.escape(str(flaky.get('historical_controlled_baseline', {}).get('runs', 'N/A')))} corridas = {html.escape(str(flaky.get('historical_controlled_baseline', {}).get('rate_pct', 'N/A')))}%; retries: {html.escape(str(flaky.get('historical_controlled_baseline', {}).get('retries', 'N/A')))}. Ese valor corresponde al commit/entorno históricos registrados, no se atribuye a este build.</li>
+<li><b>Automatización del catálogo:</b> {('N/A' if summary['automation']['automation_rate_pct'] is None else f"{summary['automation']['automation_rate_pct']:.2f}% ({automation_class.get('automated_linked', 0)}/{automation_class.get('applicable_cases', 0)} casos automatizables)")}. Fórmula: casos automatizados y enlazados ÷ casos aplicables × 100. Las pruebas manuales puras ({automation_class.get('manual_only', 0)}) se excluyen del denominador; las brechas de automatización ({automation_class.get('automation_gap', 0)}) permanecen en él. Este indicador aporta a OE6 y OE7.</li>
+<li><b>Cobertura de ejecución del catálogo en este build:</b> {('N/A' if summary['automation']['execution_coverage_pct'] is None else f"{summary['automation']['execution_coverage_pct']:.2f}% ({summary['automation']['unique_cases_with_automated_result_this_build']}/{summary['automation']['catalog_case_count']})")}. Fórmula: IDs con resultado automatizado actual ÷ IDs del catálogo × 100. Mide alcance de esta corrida, no cuántos casos están automatizados; los IDs no ejecutados quedan fuera del pass/fail y se muestran como brecha de ejecución. Se vincula a OE4/OE6.
 </ul>
 <h2>Trazabilidad de métricas a OE1–OE7</h2>
 <p>{html.escape(str(objective_map.get('note', 'El mapa relaciona objetivos e indicadores; no asigna por sí mismo porcentaje de cumplimiento.')))}</p>
-<table><thead><tr><th>Objetivo</th><th>Alcance</th><th>Meta de rúbrica</th><th>Indicadores relacionados</th><th>Alcance/límite</th></tr></thead><tbody>{objective_rows or '<tr><td colspan="5">Mapa OE no disponible.</td></tr>'}</tbody></table>
+<p><b>Lectura de OE:</b> OE1 requiere contrastar los casos con el total canónico de historias y criterios; la existencia de IDs trazables no equivale al porcentaje de requisitos cubiertos. OE2 valora integridad, escenarios y reproducibilidad; celdas completas no garantizan que los pasos sean semánticamente correctos. OE3 usa resultados unitarios/de integración y cobertura de código, cuya unidad son pruebas o elementos de código según el reporte. OE4 usa resultados funcionales por caso; un fallo se conserva y clasifica, no se convierte automáticamente en defecto. OE5 usa los perfiles K6, accesibilidad, seguridad y compatibilidad ejecutados con sus propios criterios. OE6 usa la proporción automatizada sobre el catálogo aplicable y la evidencia de CI/Docker. OE7 reúne métricas de cobertura, fallos, defectos, estática, estabilidad y automatización; mientras la rúbrica no defina pesos, no se inventa un porcentaje global. El estado y la interpretación de cada objetivo se limitan a la evidencia enumerada en esta corrida.</p>
+<table><thead><tr><th>OE</th><th>Objetivo</th><th>Meta de rúbrica</th><th>Indicadores relacionados</th><th>Qué significan los datos de esta corrida</th><th>Límite de interpretación</th></tr></thead><tbody>{objective_rows or '<tr><td colspan="6">Mapa OE no disponible.</td></tr>'}</tbody></table>
 <p><b>TestLink:</b> resumen {html.escape(str(summary['testlink']['summary_generated']))}; publicación {html.escape(str(summary['testlink']['publication_status']))}.</p>
 <p>Artefactos originales y resumen JSON se conservan bajo <code>{html.escape(summary['evidence']['run_directory'])}</code>.</p>
 </body></html>"""

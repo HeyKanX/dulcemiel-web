@@ -3,6 +3,7 @@ frontend/node_modules/
 
 # Build outputs
 frontend/dist/
+frontend/target/
 frontend/.angular/
 frontend/coverage/
 backend/target/
