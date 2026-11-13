@@ -54,7 +54,7 @@ docker compose --project-name "$project" --env-file "$env_path" -f compose.qa.ya
 
 ready=0
 for attempt in $(seq 1 90); do
-  if curl --fail --silent http://backend:5000/api/health >/dev/null && curl --fail --silent http://frontend:4200/productos >/dev/null; then
+  if curl --fail --silent http://backend:5000/api/health >/dev/null && curl --fail --silent http://frontend:4200/ >/dev/null; then
     ready=1
     break
   fi
