@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "project": "Dulce Miel",
+  "environment": "QA local aislado; http://127.0.0.1:4200; SQL QA container dulce-miel-qa-c5",
+  "detected_commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+  "triage_policy": {
+    "confirmed": "Reproducible test failure corroborated by the rendered DOM or current template; not a failure inferred from status alone.",
+    "severity": {
+      "Alta": "Core information/control cannot be identified with assistive technology for a critical task.",
+      "Media": "Control or state is not accessible, but the task remains discoverable through another cue or route."
+    }
+  },
+  "defects": [
+    {
+      "defect_id": "DEF-ACC-001",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "Filtros del catálogo carecen de etiqueta programática",
+      "case_ids": [
+        "TC-NF-ACC-004"
+      ],
+      "detail": "El campo Buscar producto y el selector de categoría no tienen label asociado ni aria-label.",
+      "source": "frontend/src/app/modules/productos/listado-productos/listado-productos.component.ts:72-76",
+      "evidence_cases": [
+        "TC-NF-ACC-004"
+      ],
+      "first_observed_run": "local-phase1-integration"
+    },
+    {
+      "defect_id": "DEF-ACC-002",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El cambio de cantidad del carrito no se anuncia a tecnología asistiva",
+      "case_ids": [
+        "TC-NF-ACC-008"
+      ],
+      "detail": "Tras cambiar cantidad, el DOM no contiene aria-live, role=status ni role=alert para comunicar el cambio.",
+      "source": "frontend/src/app/modules/carrito/vista-carrito/vista-carrito.component.ts",
+      "evidence_cases": [
+        "TC-NF-ACC-008"
+      ],
+      "first_observed_run": "local-phase1-integration"
+    },
+    {
+      "defect_id": "DEF-ACC-003",
+      "status": "confirmed_open",
+      "severity": "Alta",
+      "title": "Los rótulos del checkout no están asociados a sus campos",
+      "case_ids": [
+        "TC-NF-ACC-009"
+      ],
+      "detail": "Los siete labels visibles no usan for/id; el navegador reporta cero labels asociados a los controles.",
+      "source": "frontend/src/app/modules/carrito/checkout/checkout.component.ts:22-40",
+      "evidence_cases": [
+        "TC-NF-ACC-009"
+      ],
+      "first_observed_run": "local-phase1-integration"
+    },
+    {
+      "defect_id": "DEF-F-004",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El backend acepta cantidad cero al agregar producto al carrito",
+      "case_ids": [
+        "TC-F-010"
+      ],
+      "detail": "La prueba de backend esperaba HTTP 400 y que no se escribiera en carrito; la ejecución devolvió HTTP 201 y falló la aserción. La corrida completa volvió a reproducirlo el 12-11-2026.",
+      "source": "backend/src/main/java/com/dulcemiel/backend/controller/CarritoController.java:49-72",
+      "evidence_cases": [
+        "TC-F-010"
+      ],
+      "evidence_files": [
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.CarritoControllerAuditTest.xml"
+      ],
+      "first_observed_run": "local-metrics-2026-11-12"
+    }
+  ]
+}

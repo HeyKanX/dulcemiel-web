@@ -56,6 +56,14 @@ pipeline {
             }
         }
 
+        stage('Análisis estático - SpotBugs') {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'No se pudo generar el análisis estático Java; las métricas indicarán el reporte faltante.') {
+                    dir('backend') { sh 'bash ./mvnw -B -ntp com.github.spotbugs:spotbugs-maven-plugin:4.10.5.0:spotbugs' }
+                }
+            }
+        }
+
         stage('Instalar herramientas de QA') {
             steps {
                 catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'No quedaron listas las dependencias QA; las suites dependientes se marcarán como omitidas.') {
@@ -244,7 +252,7 @@ pipeline {
                     echo 'No se generaron reportes JUnit de QA en esta corrida; revisa si la preparación del entorno fue omitida o falló.'
                 }
             }
-            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/metrics/reports/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'backend/target/surefire-reports/**,backend/target/site/jacoco/**,backend/target/spotbugsXml.xml,frontend/coverage/**,frontend/dist/**,qa/artifacts/**,qa/metrics/reports/**,qa/testlink/results/current-run.json,qa/testlink/results/publication-report.json', allowEmptyArchive: true
             sh 'if [ -f qa/.local/jenkins-run.json ]; then bash qa/jenkins/cleanup-qa.sh; fi'
         }
     }

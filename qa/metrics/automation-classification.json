@@ -1,0 +1,447 @@
+{
+  "schema_version": "1.0",
+  "as_of_commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+  "source": "qa/testlink/results/case-id-map.json cotejado con definiciones ejecutables/mapeos de qa/tests y qa/testlink/generate_current_run.py",
+  "manual_only_policy": "Solo casos que exigen confirmar salida hablada real con lector de pantalla; pruebas de teclado/navegación restantes permanecen en el alcance automatizable.",
+  "counts": {
+    "automated_linked": 36,
+    "automation_gap": 11,
+    "manual_only": 2
+  },
+  "cases": [
+    {
+      "case_id": "TC-F-001",
+      "name": "TC-F-001 - TC-F-001 — Registrar una cuenta nueva",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/autenticacion.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-002",
+      "name": "TC-F-002 - TC-F-002 — Rechazar correo duplicado",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/autenticacion.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-003",
+      "name": "TC-F-003 - TC-F-003 — Iniciar sesión con usuario activo",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-004",
+      "name": "TC-F-004 - TC-F-004 — Rechazar credenciales incorrectas",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/features/autenticacion.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-005",
+      "name": "TC-F-005 - TC-F-005 — Mostrar catálogo con datos esenciales",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/catalogo.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-006",
+      "name": "TC-F-006 - TC-F-006 — Identificar productos no disponibles",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-007",
+      "name": "TC-F-007 - TC-F-007 — Mostrar detalle de producto",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/features/catalogo.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-008",
+      "name": "TC-F-008 - TC-F-008 — Informar producto inexistente",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/catalogo.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-009",
+      "name": "TC-F-009 - TC-F-009 — Agregar producto al carrito",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/carrito_pedidos.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-010",
+      "name": "TC-F-010 - TC-F-010 — Rechazar cantidad cero",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-011",
+      "name": "TC-F-011 - TC-F-011 — Actualizar y quitar producto del carrito",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-012",
+      "name": "TC-F-012 - TC-F-012 — Rechazar cantidad mayor al stock",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-013",
+      "name": "TC-F-013 - TC-F-013 — Crear y confirmar pedido",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-014",
+      "name": "TC-F-014 - TC-F-014 — Impedir pedido vacío o incompleto",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json",
+        "qa/tests/functional/features/carrito_pedidos.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-015",
+      "name": "TC-F-015 - TC-F-015 — Listar solo pedidos del cliente",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-016",
+      "name": "TC-F-016 - TC-F-016 — Consultar detalle de pedido propio",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-017",
+      "name": "TC-F-017 - TC-F-017 — Crear o actualizar producto como administrador",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-018",
+      "name": "TC-F-018 - TC-F-018 — Denegar administración al cliente",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/features/carrito_pedidos.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-019",
+      "name": "TC-F-019 - TC-F-019 — Actualizar pedido con estado permitido",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-020",
+      "name": "TC-F-020 - TC-F-020 — Rechazar estado inválido o pedido inexistente",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-001",
+      "name": "TC-NF-ACC-001 - TC-NF-ACC-001 — Completar registro solo con teclado",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-ACC-002",
+      "name": "TC-NF-ACC-002 - TC-NF-ACC-002 — Etiquetar campos y errores de registro",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-ACC-003",
+      "name": "TC-NF-ACC-003 - TC-NF-ACC-003 — Usar inicio de sesión con tecnología asistiva",
+      "mode": "manual_only",
+      "evidence_sources": [],
+      "reason": "Requiere confirmar el anuncio real con lector de pantalla; mantener validación manual."
+    },
+    {
+      "case_id": "TC-NF-ACC-004",
+      "name": "TC-NF-ACC-004 - TC-NF-ACC-004 — Describir imágenes y controles del catálogo",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-005",
+      "name": "TC-NF-ACC-005 - TC-NF-ACC-005 — Comunicar estados sin depender del color",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-006",
+      "name": "TC-NF-ACC-006 - TC-NF-ACC-006 — Recorrer detalle y acciones con teclado",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-ACC-007",
+      "name": "TC-NF-ACC-007 - TC-NF-ACC-007 — Operar carrito con teclado",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-ACC-008",
+      "name": "TC-NF-ACC-008 - TC-NF-ACC-008 — Anunciar cambios del carrito",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-009",
+      "name": "TC-NF-ACC-009 - TC-NF-ACC-009 — Identificar campos y errores del pedido",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-010",
+      "name": "TC-NF-ACC-010 - TC-NF-ACC-010 — Completar compra sin bloqueos de teclado",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-ACC-011",
+      "name": "TC-NF-ACC-011 - TC-NF-ACC-011 — Recorrer seguimiento de pedidos con lector",
+      "mode": "manual_only",
+      "evidence_sources": [],
+      "reason": "Requiere confirmar el anuncio real con lector de pantalla; mantener validación manual."
+    },
+    {
+      "case_id": "TC-NF-ACC-012",
+      "name": "TC-NF-ACC-012 - TC-NF-ACC-012 — Operar administración con teclado",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-013",
+      "name": "TC-NF-ACC-013 - TC-NF-ACC-013 — Mantener uso con zoom al 200 %",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/non-functional/accessibility/pending_playwright_cases.py"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-014",
+      "name": "TC-NF-ACC-014 - TC-NF-ACC-014 — Verificar contraste WCAG AA",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#read_axe"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-ACC-015",
+      "name": "TC-NF-ACC-015 - TC-NF-ACC-015 — Mantener navegación y controles consistentes",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-REN-001",
+      "name": "TC-NF-REN-001 - TC-NF-REN-001 — Medir rendimiento de página de productos",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/non-functional/performance/k6/catalogo.js"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-REN-002",
+      "name": "TC-NF-REN-002 - TC-NF-REN-002 — Medir rendimiento de API de productos",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#K6_CASES",
+        "qa/tests/non-functional/performance/k6/catalogo.js"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-COM-001",
+      "name": "TC-NF-COM-001 - TC-NF-COM-001 — Verificar compatibilidad y ancho adaptable",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#read_compatibility"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-SEG-001",
+      "name": "TC-NF-SEG-001 - TC-NF-SEG-001 — Bloquear creación de productos al cliente",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/api/dulcemiel.postman_collection.json"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-INT-001",
+      "name": "TC-NF-INT-001 - TC-NF-INT-001 — No persistir pedido inválido",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#BACKEND_CASES",
+        "qa/testlink/generate_current_run.py#K6_CASES"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-INT-002",
+      "name": "TC-NF-INT-002 - TC-NF-INT-002 — Conservar sesión y catálogo tras recarga",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/tests/functional/features/carrito_pedidos.feature"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-021",
+      "name": "TC-F-021 - TC-F-021 — Rechazar cantidad negativa sin alterar el carrito",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-F-022",
+      "name": "TC-F-022 - TC-F-022 — Rechazar cantidad fraccionaria o fuera de rango",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-F-023",
+      "name": "TC-F-023 - TC-F-023 — Evitar sobreventa en compras concurrentes",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-F-024",
+      "name": "TC-F-024 - TC-F-024 — Rechazar valores numéricos inválidos al crear producto",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    },
+    {
+      "case_id": "TC-NF-REN-003",
+      "name": "TC-NF-REN-003 - TC-NF-REN-003 — Estrés progresivo y recuperación",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#K6_CASES"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-REN-004",
+      "name": "TC-NF-REN-004 - TC-NF-REN-004 — Pico repentino y recuperación",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#K6_CASES"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-NF-REN-005",
+      "name": "TC-NF-REN-005 - TC-NF-REN-005 — Estabilidad sostenida de 10 minutos",
+      "mode": "automated_linked",
+      "evidence_sources": [
+        "qa/testlink/generate_current_run.py#K6_CASES"
+      ],
+      "reason": "Existe fuente de prueba automatizada y mapeo a TestLink."
+    },
+    {
+      "case_id": "TC-F-025",
+      "name": "TC-F-025 - Rechazar contraseñas distintas al registrar usuario",
+      "mode": "automation_gap",
+      "evidence_sources": [],
+      "reason": "Caso del catálogo sin suite automatizada trazada en el código actual."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Esquema propuesto de métricas de calidad — Dulce Miel
 
-**Estado:** integrado en Jenkins y GitHub Actions; verificar el primer artefacto generado en cada plataforma.
+**Estado:** generador y etapas de análisis/cobertura integrados en Jenkins y GitHub Actions; línea base local medida el 12-11-2026. La publicación real de cada build debe verificarse en el artefacto de la plataforma.
 **Alcance:** pruebas automatizadas ejecutadas por Jenkins o GitHub Actions. Los recorridos manuales quedan separados y no se mezclan en los porcentajes del pipeline.
 
 ## 1. Formatos de salida
@@ -126,6 +126,8 @@ El resumen lee JUnit/Surefire y Behave, log de Karma, datos Newman, Playwright, 
 
 El pass/fail trazable de TestLink se calcula por ID único, una vez por corrida. La cobertura de ejecución del catálogo indica cuántos IDs tuvieron estado automatizado en ese build; no es cobertura de código ni tasa de automatización. K6 se informa por perfil y solo aprueba si existe resumen y pasan todos los umbrales. Si una etapa falla sin resumen, aparece bloqueada/incompleta, no aprobada.
 
-Se mantienen como N/A las métricas sin fuente confiable: hallazgos estáticos (falta integrar analizador), tasa/severidad de defectos confirmados (requiere triage y deduplicación), defect leakage (requiere incidencias posliberación vinculadas a una versión), flaky rate (requiere repeticiones controladas), y porcentaje de automatización (el catálogo aún no clasifica los 49 casos como manuales o automatizables). Los recorridos manuales de teclado y Narrador no entran al resultado de los pipelines.
+La línea base local del 12-11-2026 mide cobertura de JaCoCo y Angular, cuenta hallazgos SpotBugs por prioridad (sin tratarlos como defectos confirmados), calcula defectos únicos del registro de triage enlazados a fallos, mide tres repeticiones estables de ocho casos Playwright y clasifica los casos del catálogo por automatización enlazada o ejecución exclusivamente manual. Defect leakage queda como **No medible**, no como cero, porque aún no existe una fuente de incidencias posliberación asociada a versión y periodo. Para medirlo, registrar por cada versión fecha de liberación, periodo observado, defectos confirmados preliberación y postliberación y vínculo al ID del defecto.
 
-El primer build posterior a esta integración será la nueva línea base; no se reutilizan aquí las cifras históricas del build #8. Revisar el JSON/HTML y reportes fuente de ese build antes de comparar tendencias.
+Los recorridos manuales de teclado y Narrador no entran al resultado de los pipelines; se conservan en TestLink como evidencia manual. La tasa de automatización se calcula como casos automatizados y enlazados / casos aplicables (casos manuales puros excluidos; brechas incluidas). La cobertura de ejecución del build es un indicador distinto: IDs del catálogo con resultado actual / total del catálogo.
+
+La línea base local no sustituye una corrida de Jenkins o GitHub Actions: el reporte la etiqueta como local y no publica resultados a TestLink. Revisar los artefactos del primer build de cada plataforma antes de comparar tendencias; no reutilizar cifras históricas de otros commits.

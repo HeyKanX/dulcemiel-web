@@ -11,6 +11,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,6 +33,14 @@ def read_json(path: Path) -> dict[str, Any] | None:
         value = json.loads(path.read_text(encoding="utf-8-sig"))
         return value if isinstance(value, dict) else None
     except (OSError, json.JSONDecodeError):
+        return None
+
+
+def git_value(repo: Path, *args: str) -> str | None:
+    try:
+        value = subprocess.check_output(["git", *args], cwd=repo, text=True, stderr=subprocess.DEVNULL).strip()
+        return value or None
+    except (OSError, subprocess.CalledProcessError):
         return None
 
 
@@ -304,26 +313,45 @@ def catalog_metrics(repo: Path, current_run: dict[str, Any] | None) -> dict[str,
     passed = sum(item.get("status") == "p" for item in by_id.values())
     failed = sum(item.get("status") == "f" for item in by_id.values())
     other = sum(item.get("status") not in ("p", "f") for item in results)
+    classification = read_json(repo / "qa/metrics/automation-classification.json") or {}
+    classification_counts = classification.get("counts", {})
+    automated = int(classification_counts.get("automated_linked", 0))
+    gaps = int(classification_counts.get("automation_gap", 0))
+    manual_only = int(classification_counts.get("manual_only", 0))
+    applicable = automated + gaps
     return {
         "catalog_case_count": len(known),
         "unique_cases_with_automated_result_this_build": len(ids),
         "cases_not_represented_this_build": max(0, len(known) - len(ids)),
         "execution_coverage_pct": pct(len(ids), len(known)),
-        "classification_status": "not_classified",
-        "automation_rate_pct": None,
-        "automation_rate_reason": "El catálogo no clasifica de forma estructurada cada caso como automatizable o manual.",
+        "classification_status": "classified" if classification_counts else "not_classified",
+        "automation_classification": {
+            "automated_linked": automated,
+            "automation_gap": gaps,
+            "manual_only": manual_only,
+            "applicable_cases": applicable,
+            "automation_rate_pct": pct(automated, applicable),
+            "source": "qa/metrics/automation-classification.json",
+        },
+        "automation_rate_pct": pct(automated, applicable),
+        "automation_rate_reason": "Casos automatizados trazados / casos automatizables; los manual_only se excluyen del denominador y los automation_gap permanecen en él.",
         "linked_result_cases": {"passed": passed, "failed": failed, "other_status": other},
         "interpretation": "execution_coverage_pct es la fracción del catálogo con resultado automatizado en este build; no representa la tasa de automatización del catálogo.",
     }
 
 
-def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
+def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = None) -> dict[str, Any]:
     outcomes = {key.removeprefix("CI_OUTCOME_").lower(): value.lower()
                 for key, value in os.environ.items() if key.startswith("CI_OUTCOME_")}
-    current_run = read_json(repo / "qa/testlink/results/current-run.json")
+    current_run_path = testlink_summary or (repo / "qa/testlink/results/current-run.json")
+    current_run = read_json(current_run_path)
     suites: list[dict[str, Any]] = []
 
-    backend_paths = list((repo / "backend/target/surefire-reports").glob("TEST-*.xml"))
+    # Maven may leave XMLs from old classes in target when it runs without clean.
+    # Only count reports written after this run's artifact directory was created.
+    run_started_at = run_dir.stat().st_mtime if run_dir.exists() else datetime.now().timestamp()
+    backend_paths = [path for path in (repo / "backend/target/surefire-reports").glob("TEST-*.xml")
+                     if path.stat().st_mtime >= run_started_at]
     total, passed, failed, skipped = junit_counts(backend_paths)
     suites.append(suite_from_counts("Backend", "Maven/Surefire", total, passed, failed, skipped,
                                     outcomes.get("backend", "unknown"),
@@ -389,6 +417,67 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
     fail_rate = pct(linked["failed"], total_linked)
 
     coverage = {"backend": jacoco_coverage(repo), "frontend": frontend_coverage(repo)}
+    static_path = repo / "backend/target/spotbugsXml.xml"
+    static_analysis: dict[str, Any] = {
+        "status": "partial",
+        "tools": ["SpotBugs"],
+        "ci_step_outcome": outcomes.get("static_analysis", "unknown"),
+        "scope": "Bytecode Java del backend; el frontend TypeScript no tiene analizador estático dedicado conectado.",
+        "findings_by_priority": {},
+        "finding_count": None,
+        "evidence": "backend/target/spotbugsXml.xml" if static_path.is_file() else None,
+    }
+    if static_path.is_file():
+        try:
+            spotbugs_root = ET.parse(static_path).getroot()
+            findings: dict[str, int] = {}
+            for item in spotbugs_root.findall("BugInstance"):
+                priority = item.get("priority", "unknown")
+                findings[priority] = findings.get(priority, 0) + 1
+            static_analysis["findings_by_priority"] = findings
+            static_analysis["finding_count"] = sum(findings.values())
+            static_analysis["status"] = "reported"
+            static_analysis["note"] = "Prioridad del analizador, no severidad confirmada; cada hallazgo requiere triage."
+        except (ET.ParseError, OSError) as exc:
+            static_analysis["status"] = "invalid_report"
+            static_analysis["reason"] = str(exc)
+    else:
+        static_analysis["status"] = "not_reported"
+        static_analysis["reason"] = "No existe reporte SpotBugs en esta corrida."
+
+    defect_register = read_json(repo / "qa/metrics/defect-register.json") or {}
+    confirmed = [item for item in defect_register.get("defects", []) if item.get("status") == "confirmed_open"]
+    current_results = (current_run or {}).get("results", [])
+    failed_ids = {str(item.get("case_id")) for item in current_results if item.get("status") == "f"}
+    executed_ids = {str(item.get("case_id")) for item in current_results if item.get("status") in ("p", "f")}
+    matched_defects = [item for item in confirmed if failed_ids.intersection(map(str, item.get("case_ids", [])))]
+    severity_distribution: dict[str, int] = {}
+    for item in matched_defects:
+        severity = str(item.get("severity", "Sin clasificar"))
+        severity_distribution[severity] = severity_distribution.get(severity, 0) + 1
+
+    stability_data = read_json(repo / "qa/metrics/stability-baseline.json") or {}
+    expected_fingerprint = stability_data.get("application_and_test_fingerprint", {})
+    current_fingerprint: dict[str, str] = {}
+    for relative in expected_fingerprint:
+        path = repo / relative
+        if path.exists():
+            try:
+                current_fingerprint[relative] = subprocess.check_output(
+                    ["git", "rev-parse", f"HEAD:{relative}"], cwd=repo, text=True,
+                    stderr=subprocess.DEVNULL,
+                ).strip()
+            except (OSError, subprocess.CalledProcessError):
+                current_fingerprint[relative] = "uncommitted-or-unavailable"
+    fingerprint_matches = bool(expected_fingerprint) and current_fingerprint == expected_fingerprint
+    runs = stability_data.get("runs", [])
+    per_case: dict[str, set[str]] = {}
+    for run in runs:
+        for case_id, status in run.get("statuses", {}).items():
+            per_case.setdefault(case_id, set()).add(status)
+    repeated_cases = len(per_case)
+    flaky_cases = sum(len(statuses) > 1 for statuses in per_case.values())
+    flaky_rate = pct(flaky_cases, repeated_cases) if fingerprint_matches else None
     publication = read_json(repo / "qa/testlink/results/publication-report.json")
     publication_outcome = os.getenv("CI_OUTCOME_TESTLINK_PUBLICATION", "skipped").lower()
     if publication:
@@ -416,8 +505,8 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
             "build_id": os.getenv("BUILD_TAG") or os.getenv("BUILD_NUMBER") or run_dir.name,
             "build_number": os.getenv("BUILD_NUMBER") or os.getenv("CI_RUN_NUMBER"),
             "run_id": os.getenv("CI_RUN_ID") or run_dir.name,
-            "commit": os.getenv("CI_COMMIT") or os.getenv("GIT_COMMIT") or os.getenv("GITHUB_SHA"),
-            "branch": os.getenv("CI_BRANCH") or os.getenv("GIT_BRANCH") or os.getenv("GITHUB_REF_NAME"),
+            "commit": os.getenv("CI_COMMIT") or os.getenv("GIT_COMMIT") or os.getenv("GITHUB_SHA") or git_value(repo, "rev-parse", "HEAD"),
+            "branch": os.getenv("CI_BRANCH") or os.getenv("GIT_BRANCH") or os.getenv("GITHUB_REF_NAME") or git_value(repo, "rev-parse", "--abbrev-ref", "HEAD"),
             "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "environment": "QA aislado",
             "build_result": overall,
@@ -431,34 +520,36 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
         },
         "suites": suites,
         "coverage": coverage,
-        "static_analysis": {
-            "status": "not_configured",
-            "tools": [],
-            "findings_by_severity": None,
-            "reason": "No hay un analizador estático conectado a Jenkins/GitHub Actions ni reporte estático archivado.",
-        },
+        "static_analysis": static_analysis,
         "defects": {
-            "confirmed_count": None,
-            "rate_per_100_executed_cases": None,
-            "severity_distribution": None,
+            "confirmed_count": len(matched_defects),
+            "triaged_confirmed_open_total": len(confirmed),
+            "rate_per_100_executed_cases": pct(len(matched_defects), len(executed_ids)),
+            "severity_distribution": severity_distribution,
             "candidate_failed_cases": linked["failed"],
-            "reason": "Los fallos de pruebas no se han triado en un registro de defectos únicos confirmados; no se infiere producto/severidad desde pass/fail.",
+            "evidence_register": "qa/metrics/defect-register.json",
+            "denominator_executed_unique_cases": len(executed_ids),
+            "reason": "Cuenta defectos únicos confirmados y vinculados a casos fallidos del resumen de esta corrida; no todos los fallos de suite se cuentan automáticamente como defectos.",
         },
         "defect_leakage": {
             "rate_pct": None,
             "reason": "Falta una fuente de incidencias posliberación vinculadas a versión y periodo de observación.",
         },
         "flaky_tests": {
-            "rate_pct": None,
-            "cases_repeated": None,
-            "cases_flaky": None,
-            "reason": "No existe aún una ventana de reejecuciones del mismo commit, datos y ambiente.",
+            "status": "measured" if fingerprint_matches and len(runs) >= 2 else "not_comparable",
+            "rate_pct": flaky_rate,
+            "cases_repeated": repeated_cases if fingerprint_matches else None,
+            "cases_flaky": flaky_cases if fingerprint_matches else None,
+            "runs": len(runs),
+            "fingerprint_matches": fingerprint_matches,
+            "reason": "Mismo fingerprint de código de aplicación y runner; tasa = casos con estados distintos / casos repetidos." if fingerprint_matches else "El código/runner actual difiere del fingerprint de la línea base; repetir con versión y entorno constantes.",
         },
         "automation": cases,
         "k6": k6_profiles,
         "testlink": {
             "summary_generated": bool(current_run),
-            "summary_file": "qa/testlink/results/current-run.json" if current_run else None,
+            "summary_file": (current_run_path.relative_to(repo).as_posix()
+                             if current_run and current_run_path.is_relative_to(repo) else str(current_run_path) if current_run else None),
             "publication_status": publication_outcome,
             "publication_report_file": "qa/testlink/results/publication-report.json" if publication else None,
         },
@@ -469,7 +560,8 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
                 "backend/target/site/jacoco/",
                 "frontend/coverage/",
                 str(run_dir.relative_to(repo)).replace("\\", "/") if run_dir.is_relative_to(repo) else str(run_dir),
-                "qa/testlink/results/current-run.json",
+                (current_run_path.relative_to(repo).as_posix()
+                 if current_run and current_run_path.is_relative_to(repo) else str(current_run_path)),
             ],
         },
     }
@@ -501,6 +593,11 @@ def html_report(summary: dict[str, Any]) -> str:
             coverage_cards.append(f"<li><b>{html.escape(data['component'])}:</b> {html.escape(values)}</li>")
         else:
             coverage_cards.append(f"<li><b>{html.escape(component)}:</b> N/A — {html.escape(data.get('reason', 'Reporte no disponible.'))}</li>")
+    static = summary["static_analysis"]
+    priorities = ", ".join(f"P{priority}: {count}" for priority, count in sorted(static.get("findings_by_priority", {}).items())) or "sin hallazgos reportados"
+    automation_class = summary["automation"].get("automation_classification", {})
+    defects = summary["defects"]
+    flaky = summary["flaky_tests"]
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Métricas de calidad — Dulce Miel — {html.escape(str(meta.get('build_id')))}</title>
@@ -528,12 +625,13 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <h2>Resultados por suite</h2><table><thead><tr><th>Suite</th><th>Herramienta</th><th>Estado</th><th>Aprobados</th><th>Fallidos</th><th>Pass rate</th></tr></thead><tbody>{suite_rows}</tbody></table>
 <h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul><p>No se promedian componentes con denominadores distintos.</p>
 <h2>K6</h2><table><thead><tr><th>Perfil</th><th>Estado</th><th>VUs máx.</th><th>Duración (s)</th><th>API p95 (ms)</th><th>Error de solicitudes</th></tr></thead><tbody>{k6_rows}</tbody></table>
-<h2>Métricas con datos pendientes</h2><ul>
-<li><b>Análisis estático:</b> N/A; no hay analizador conectado.</li>
-<li><b>Tasa/severidad de defectos:</b> N/A; primero se deben confirmar, deduplicar y clasificar los hallazgos.</li>
-<li><b>Defect leakage:</b> N/A; falta vincular incidencias posliberación a versiones.</li>
-<li><b>Flaky rate:</b> N/A; falta repetir el mismo commit con datos y ambiente constantes.</li>
-<li><b>Porcentaje de automatización:</b> N/A; el catálogo no etiqueta estructuradamente casos manuales y automatizables. Cobertura de ejecución del catálogo este build: {('N/A' if summary['automation']['execution_coverage_pct'] is None else f"{summary['automation']['execution_coverage_pct']:.2f}%")}.</li>
+<h2>Métricas calculadas y límites de evidencia</h2><ul>
+<li><b>Análisis estático:</b> {html.escape(str(static.get('finding_count') if static.get('finding_count') is not None else 'N/A'))} hallazgos SpotBugs ({html.escape(priorities)}); alcance: {html.escape(static.get('scope', 'N/A'))} Las prioridades del analizador no equivalen a severidad confirmada.</li>
+<li><b>Defectos confirmados:</b> {defects['confirmed_count']} asociados a fallos del resumen ({defects['rate_per_100_executed_cases'] if defects['rate_per_100_executed_cases'] is not None else 'N/A'} por cada 100 casos automatizados ejecutados; distribución: {html.escape(json.dumps(defects['severity_distribution'], ensure_ascii=False))}). Total triado abierto: {defects['triaged_confirmed_open_total']}.</li>
+<li><b>Defect leakage:</b> No medible; falta un registro de defectos posliberación asociado a versión y periodo de observación. No se interpreta ausencia de reporte como cero.</li>
+<li><b>Flaky rate:</b> {('N/A por cambio de fingerprint' if flaky['rate_pct'] is None else f"{flaky['rate_pct']:.2f}% ({flaky['cases_flaky']}/{flaky['cases_repeated']} casos; {flaky['runs']} corridas)")}.</li>
+<li><b>Automatización del catálogo:</b> {('N/A' if summary['automation']['automation_rate_pct'] is None else f"{summary['automation']['automation_rate_pct']:.2f}% ({automation_class.get('automated_linked', 0)}/{automation_class.get('applicable_cases', 0)} casos automatizables)")}; {automation_class.get('automation_gap', 0)} brechas y {automation_class.get('manual_only', 0)} solo manuales.</li>
+<li><b>Cobertura de ejecución del catálogo en este build:</b> {('N/A' if summary['automation']['execution_coverage_pct'] is None else f"{summary['automation']['execution_coverage_pct']:.2f}% ({summary['automation']['unique_cases_with_automated_result_this_build']}/{summary['automation']['catalog_case_count']})")}.</li>
 </ul>
 <p><b>TestLink:</b> resumen {html.escape(str(summary['testlink']['summary_generated']))}; publicación {html.escape(str(summary['testlink']['publication_status']))}.</p>
 <p>Artefactos originales y resumen JSON se conservan bajo <code>{html.escape(summary['evidence']['run_directory'])}</code>.</p>
@@ -546,6 +644,8 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=default_repo)
     parser.add_argument("--run-dir", type=Path)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--testlink-summary", type=Path,
+                        help="Resumen de esta corrida; permite generar el reporte sin sobrescribir el habitual.")
     args = parser.parse_args()
     repo = args.repo_root.resolve()
     if args.run_dir:
@@ -556,7 +656,10 @@ def main() -> int:
     run_dir = run_dir.resolve()
     output_dir = args.output_dir.resolve() if args.output_dir else run_dir / "metrics"
     output_dir.mkdir(parents=True, exist_ok=True)
-    summary = build_summary(repo, run_dir)
+    summary_path = args.testlink_summary
+    if summary_path and not summary_path.is_absolute():
+        summary_path = repo / summary_path
+    summary = build_summary(repo, run_dir, summary_path)
     json_path = output_dir / "quality-summary.json"
     html_path = output_dir / "quality-report.html"
     json_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")

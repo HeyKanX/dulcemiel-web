@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "measured_at_utc": "2026-11-13T03:00:00Z",
+  "provider": "QA local",
+  "environment": "QA local aislado; Chrome/Chromium Playwright; same local SQL QA seed.",
+  "application_and_test_fingerprint": {
+    "backend/src": "c8a2ea0f898fad6ed0e943ef77fb55ade29a448a",
+    "frontend/src": "db92f4d43b9aa0edac41b2476ffcdf6fada17522",
+    "qa/tests/non-functional/accessibility/pending_playwright_cases.py": "1517f51242f7d832fdb95420ca664d49057f6e84"
+  },
+  "note": "Tres ejecuciones secuenciales del mismo conjunto de ocho casos; el fingerprint debe coincidir para comparar builds futuros.",
+  "runs": [
+    {
+      "run_id": "local-phase1-integration",
+      "results_path": "qa/artifacts/pending-playwright-integration-final/results.json",
+      "statuses": {
+        "TC-F-006": "p",
+        "TC-F-011": "p",
+        "TC-NF-ACC-004": "f",
+        "TC-NF-ACC-005": "p",
+        "TC-NF-ACC-008": "f",
+        "TC-NF-ACC-009": "f",
+        "TC-NF-ACC-012": "p",
+        "TC-NF-ACC-013": "p"
+      }
+    },
+    {
+      "run_id": "local-phase1-flaky-2",
+      "results_path": "qa/artifacts/pending-playwright-flaky-2/results.json",
+      "statuses": {
+        "TC-F-006": "p",
+        "TC-F-011": "p",
+        "TC-NF-ACC-004": "f",
+        "TC-NF-ACC-005": "p",
+        "TC-NF-ACC-008": "f",
+        "TC-NF-ACC-009": "f",
+        "TC-NF-ACC-012": "p",
+        "TC-NF-ACC-013": "p"
+      }
+    },
+    {
+      "run_id": "local-phase1-flaky-3",
+      "results_path": "qa/artifacts/pending-playwright-flaky-3/results.json",
+      "statuses": {
+        "TC-F-006": "p",
+        "TC-F-011": "p",
+        "TC-NF-ACC-004": "f",
+        "TC-NF-ACC-005": "p",
+        "TC-NF-ACC-008": "f",
+        "TC-NF-ACC-009": "f",
+        "TC-NF-ACC-012": "p",
+        "TC-NF-ACC-013": "p"
+      }
+    }
+  ]
+}
