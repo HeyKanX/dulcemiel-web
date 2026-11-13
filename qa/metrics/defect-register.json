@@ -32,7 +32,12 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-ACC-001",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "local-phase1-integration"
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-004.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-ACC-002",
@@ -55,7 +60,12 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-ACC-002",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "local-phase1-integration"
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-008.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-ACC-003",
@@ -78,7 +88,12 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-ACC-003",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "local-phase1-integration"
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-009.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-ACC-004",
@@ -148,7 +163,8 @@
         "TC-NF-ACC-014"
       ],
       "evidence_files": [
-        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json",
+        "qa/artifacts/build-16-48a2e976/accessibility-axe/axe-results.json"
       ],
       "first_observed_run": "github-actions-build-8-2026-11-13",
       "module": "accesibilidad / interfaz",
@@ -158,7 +174,9 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-ACC-006",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-F-004",
@@ -216,7 +234,8 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-F-005",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "evidence_files": []
     },
     {
       "defect_id": "DEF-INT-006",
@@ -235,10 +254,12 @@
         "qa/artifacts/phase2-47311c38/behave-full/carrito_pedidos.Compra y permisos del cliente.xml",
         "qa/artifacts/phase2-47311c38/behave/phase2-fix_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.txt",
         "GitHub Actions run 43408870524: qa/artifacts/build-15-087d8cf9/ui-behave/TESTS-carrito_pedidos.xml",
-        "GitHub Actions run 43408870524: screenshot build-15-087d8cf9_failed_TC-NF-INT-002...png"
+        "GitHub Actions run 43408870524: screenshot build-15-087d8cf9_failed_TC-NF-INT-002...png",
+        "qa/artifacts/build-16-48a2e976/ui-behave/TESTS-carrito_pedidos.xml",
+        "qa/artifacts/build-16-48a2e976/build-16-48a2e976_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.png"
       ],
       "first_observed_run": "github-actions-build-8-2026-11-13",
-      "last_reproduced_run": "GitHub Actions build 15 / run 43408870524 / 2026-11-13",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
       "module": "catálogo / integración frontend-backend",
       "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
       "recorded_on": "2026-11-13",
@@ -246,9 +267,26 @@
       "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
       "deduplication_key": "DEF-INT-006",
       "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
-      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     }
   ],
   "date_policy": "recorded_on es la fecha del registro estructurado; first_observed_on queda null cuando no consta en la evidencia original. No sustituir una fecha desconocida por la fecha de registro.",
-  "deduplication_policy": "Un registro por defecto raíz confirmado, identificado por defect_id/deduplication_key; varios casos asociados al mismo defecto no incrementan el conteo."
+  "deduplication_policy": "Un registro por defecto raíz confirmado, identificado por defect_id/deduplication_key; varios casos asociados al mismo defecto no incrementan el conteo.",
+  "last_reconciled_run": {
+    "provider": "GitHub Actions",
+    "run_id": "43414310448",
+    "build_number": 16,
+    "commit": "2569f4358502fc0725a318b002f50798a823d0c0",
+    "date": "2026-11-13",
+    "unique_automated_cases": 36,
+    "failed_case_ids": [
+      "TC-NF-ACC-004",
+      "TC-NF-ACC-008",
+      "TC-NF-ACC-009",
+      "TC-NF-ACC-014",
+      "TC-NF-INT-002"
+    ],
+    "interpretation": "Cinco casos fallidos no significan cinco defectos confirmados. Cuatro se vincularon a defectos de accesibilidad ya triados; el caso de integración permanece reproducible y con causa raíz pendiente."
+  }
 }

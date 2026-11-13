@@ -1,0 +1,836 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "project": "Dulce Miel",
+    "provider": "github-actions",
+    "build_id": "build-16-48a2e976",
+    "build_number": "16",
+    "run_id": "43414310448",
+    "commit": "2569f4358502fc0725a318b002f50798a823d0c0",
+    "branch": "refs/pull/8/merge",
+    "timestamp_utc": "2026-11-13T11:33:18+00:00",
+    "report_generated_at_utc": "2026-11-13T11:53:39+00:00",
+    "environment": "QA aislado",
+    "build_result": "failure",
+    "run_url": "https://github.com/HeyKanX/dulcemiel-web/actions/runs/43414310448",
+    "trigger": "pull_request"
+  },
+  "summary": {
+    "automated_linked_cases": {
+      "total_executed": 36,
+      "passed": 31,
+      "failed": 5,
+      "pass_rate_pct": 86.11,
+      "fail_rate_pct": 13.89
+    },
+    "counts_not_in_denominator": {
+      "catalog_cases_not_represented_this_build": 13,
+      "no_status": 0
+    },
+    "interpretation": "Tasas calculadas sobre IDs únicos automatizados con resultado en current-run.json. No son tasa de defectos ni cubren las pruebas manuales."
+  },
+  "suites": [
+    {
+      "suite": "Backend",
+      "tool": "Maven/Surefire",
+      "count_unit": "prueba JUnit/Surefire",
+      "status": "passed",
+      "counts": {
+        "total": 26,
+        "executed": 26,
+        "passed": 26,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.BackendJavaApplicationTests.xml",
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.xml",
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.CarritoCa11TddTest.xml",
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.CarritoControllerAuditTest.xml",
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.PedidosControllerAuditTest.xml",
+        "backend/target/surefire-reports/TEST-com.dulcemiel.backend.service.JwtServiceTest.xml"
+      ]
+    },
+    {
+      "suite": "Frontend",
+      "tool": "Angular/Karma",
+      "count_unit": "elemento informado por la herramienta; ver evidencia de suite",
+      "status": "passed",
+      "counts": {
+        "total": 8,
+        "executed": 8,
+        "passed": 8,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "frontend/coverage/frontend-tests.log"
+      ]
+    },
+    {
+      "suite": "API",
+      "tool": "Newman",
+      "count_unit": "aserción Newman (solicitudes informadas aparte)",
+      "status": "passed",
+      "counts": {
+        "total": 33,
+        "executed": 33,
+        "passed": 33,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "api/newman.json"
+      ],
+      "note": "32 solicitudes; pass/fail se calcula sobre aserciones Newman."
+    },
+    {
+      "suite": "Interfaz",
+      "tool": "Behave/Selenium",
+      "count_unit": "escenario Behave",
+      "status": "failed",
+      "counts": {
+        "total": 10,
+        "executed": 10,
+        "passed": 9,
+        "failed": 1,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 90.0,
+        "fail_rate_pct": 10.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/ui-behave/TESTS-autenticacion.xml",
+        "qa/artifacts/build-16-48a2e976/ui-behave/TESTS-carrito_pedidos.xml",
+        "qa/artifacts/build-16-48a2e976/ui-behave/TESTS-catalogo.xml"
+      ],
+      "note": "Los errores de UI requieren triage; no se clasifican automáticamente como defectos del producto."
+    },
+    {
+      "suite": "Casos Fase 1 seleccionados",
+      "tool": "Playwright",
+      "count_unit": "elemento informado por la herramienta; ver evidencia de suite",
+      "status": "failed",
+      "counts": {
+        "total": 8,
+        "executed": 8,
+        "passed": 5,
+        "failed": 3,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 62.5,
+        "fail_rate_pct": 37.5
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/junit.xml"
+      ],
+      "note": "Ocho casos del registro; el estado se calcula desde JUnit de esta corrida, no desde resultados manuales previos."
+    },
+    {
+      "suite": "Compatibilidad",
+      "tool": "Playwright",
+      "count_unit": "prueba Playwright resumida (no combinaciones internas)",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "compatibility/playwright.log"
+      ]
+    },
+    {
+      "suite": "Accesibilidad automática",
+      "tool": "axe-core",
+      "count_unit": "ruta/página analizada por axe-core",
+      "status": "failed",
+      "counts": {
+        "total": 9,
+        "executed": 9,
+        "passed": 1,
+        "failed": 8,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 11.11,
+        "fail_rate_pct": 88.89
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "accessibility-axe/axe-results.json"
+      ]
+    },
+    {
+      "suite": "K6 — humo",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-smoke/summary.json"
+      ],
+      "note": null
+    },
+    {
+      "suite": "K6 — línea base",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-baseline/summary.json"
+      ],
+      "note": null
+    },
+    {
+      "suite": "K6 — carga moderada",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-moderate/summary.json"
+      ],
+      "note": null
+    },
+    {
+      "suite": "K6 — estrés progresivo",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-stress/summary.json"
+      ],
+      "note": null
+    },
+    {
+      "suite": "K6 — pico repentino",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-spike/summary.json"
+      ],
+      "note": null
+    },
+    {
+      "suite": "K6 — carga sostenida",
+      "tool": "K6",
+      "status": "passed",
+      "counts": {
+        "total": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "pass_rate_pct": 100.0,
+        "fail_rate_pct": 0.0
+      },
+      "ci_step_outcome": "unknown",
+      "evidence": [
+        "qa/artifacts/build-16-48a2e976/k6-sustained/summary.json"
+      ],
+      "note": null
+    }
+  ],
+  "objective_mapping": {
+    "schema_version": "1.0",
+    "source": "Rúbrica del proyecto compartida por el equipo",
+    "note": "Este mapa vincula indicadores con objetivos; no calcula porcentajes de cumplimiento del objetivo. Estos requieren la rúbrica desglosada y evidencia del mismo alcance/build.",
+    "objectives": [
+      {
+        "id": "OE1",
+        "name": "Historias de Usuario y Criterios de Aceptación",
+        "target": "100%",
+        "indicators": [
+          "Cobertura de HU y criterios de aceptación",
+          "Trazabilidad requisito/criterio a caso de prueba"
+        ],
+        "evidence": [
+          "Informe/Registro_Casos_Prueba_Dulce_Miel_ACTUAL.xlsx",
+          "qa/testlink/results/case-id-map.json"
+        ],
+        "limitation": "El pipeline no recibe un inventario versionado de todas las HU y CA; no calcula cobertura requisito/criterio."
+      },
+      {
+        "id": "OE2",
+        "name": "Diseño de Casos de Prueba",
+        "target": "100%",
+        "indicators": [
+          "Unicidad e integridad de campos",
+          "Escenarios positivos, negativos y límite",
+          "Reproducibilidad"
+        ],
+        "evidence": [
+          "Informe/Registro_Casos_Prueba_Dulce_Miel_ACTUAL.xlsx",
+          "qa/testlink/results/case-id-map.json"
+        ],
+        "limitation": "La validación semántica del diseño y la cobertura de clases de equivalencia se revisan contra las HU/CA; no se infieren de que las celdas estén diligenciadas."
+      },
+      {
+        "id": "OE3",
+        "name": "Pruebas Unitarias, de Integración y TDD",
+        "target": "100%",
+        "indicators": [
+          "JUnit/Surefire",
+          "Cobertura JaCoCo",
+          "Integración SQL/Testcontainers",
+          "Prueba identificada como TDD"
+        ],
+        "evidence": [
+          "backend/target/surefire-reports/",
+          "backend/target/site/jacoco/jacoco.xml"
+        ]
+      },
+      {
+        "id": "OE4",
+        "name": "Pruebas Funcionales y de Aceptación",
+        "target": "100%",
+        "indicators": [
+          "Pass/fail por suite",
+          "Resultados por ID único",
+          "Ejecución y publicación actual a TestLink"
+        ],
+        "evidence": [
+          "qa/artifacts/",
+          "qa/testlink/results/current-run.json",
+          "qa/testlink/results/publication-report.json"
+        ]
+      },
+      {
+        "id": "OE5",
+        "name": "Pruebas No Funcionales",
+        "target": "100%",
+        "indicators": [
+          "Perfiles K6 y umbrales",
+          "axe-core",
+          "Compatibilidad Playwright",
+          "Seguridad Newman"
+        ],
+        "evidence": [
+          "qa/artifacts/",
+          "qa/metrics/reports/"
+        ]
+      },
+      {
+        "id": "OE6",
+        "name": "Herramientas de Automatización y CI/CD",
+        "target": ">=75%",
+        "indicators": [
+          "Tasa de automatización del catálogo aplicable",
+          "Jenkins/GitHub Actions",
+          "Docker",
+          "Artefactos de ejecución"
+        ],
+        "evidence": [
+          "Jenkinsfile",
+          ".github/workflows/quality.yml",
+          "qa/metrics/automation-classification.json"
+        ]
+      },
+      {
+        "id": "OE7",
+        "name": "Métricas de Calidad de Software",
+        "target": ">=50%",
+        "indicators": [
+          "Cobertura estática/dinámica",
+          "Tasa y severidad de defectos",
+          "Pass/fail",
+          "Defect leakage",
+          "Flaky rate",
+          "Automatización"
+        ],
+        "evidence": [
+          "quality-summary.json",
+          "quality-report.html",
+          "qa/metrics/defect-register.json",
+          "qa/metrics/stability-baseline.json"
+        ],
+        "limitation": "Defect leakage queda N/A sin incidencias posliberación ligadas a versión y periodo. La rúbrica no especifica ponderación para convertir submétricas en porcentaje global de OE7."
+      }
+    ]
+  },
+  "coverage": {
+    "backend": {
+      "status": "reported",
+      "component": "backend Java",
+      "tool": "JaCoCo",
+      "metrics": {
+        "instructions": {
+          "covered": 1613,
+          "total": 4328,
+          "coverage_pct": 37.27
+        },
+        "branches": {
+          "covered": 104,
+          "total": 362,
+          "coverage_pct": 28.73
+        },
+        "lines": {
+          "covered": 235,
+          "total": 469,
+          "coverage_pct": 50.11
+        },
+        "methods": {
+          "covered": 58,
+          "total": 108,
+          "coverage_pct": 53.7
+        }
+      },
+      "evidence": "backend/target/site/jacoco/jacoco.xml"
+    },
+    "frontend": {
+      "status": "reported",
+      "component": "frontend Angular",
+      "tool": "Karma/Istanbul HTML",
+      "metrics": {
+        "statements": {
+          "covered": 72,
+          "total": 97,
+          "coverage_pct": 74.23
+        },
+        "branches": {
+          "covered": 14,
+          "total": 25,
+          "coverage_pct": 56.0
+        },
+        "functions": {
+          "covered": 24,
+          "total": 41,
+          "coverage_pct": 58.54
+        },
+        "lines": {
+          "covered": 69,
+          "total": 94,
+          "coverage_pct": 73.4
+        }
+      },
+      "evidence": "frontend/coverage/ihc-frontend/index.html"
+    }
+  },
+  "coverage_targets": {
+    "schema_version": "1.0",
+    "effective_from": "2026-11-13",
+    "policy": "Targets are staged thresholds, not claims of current coverage. Compare against a report from the same component, tool, branch, and build; do not average frontend and backend percentages.",
+    "stages": [
+      {
+        "stage": "baseline",
+        "purpose": "Freeze a comparable CI measurement before enforcing a new threshold.",
+        "gate": "report-only",
+        "components": {
+          "backend_java": {
+            "line_pct": 50.11,
+            "branch_pct": 28.73,
+            "source": "GitHub Actions run 43414310448; JaCoCo; base frozen for review"
+          },
+          "frontend_typescript": {
+            "line_pct": 73.4,
+            "branch_pct": 56.0,
+            "source": "GitHub Actions run 43414310448; Karma/Istanbul; base frozen for review"
+          }
+        }
+      },
+      {
+        "stage": "next_increment",
+        "purpose": "Raise the measured baseline by five percentage points on critical validation code, then review exceptions before gating.",
+        "gate": "report-and-review",
+        "components": {
+          "backend_java": {
+            "line_delta_pct_points": 5,
+            "branch_delta_pct_points": 5,
+            "priority": "stock, cart quantity, order creation, authorization and input validation"
+          },
+          "frontend_typescript": {
+            "line_delta_pct_points": 5,
+            "branch_delta_pct_points": 5,
+            "priority": "registration, login, cart, checkout and error-state handling"
+          }
+        }
+      },
+      {
+        "stage": "enforcement",
+        "purpose": "Make the reviewed component threshold a Quality Gate only after the baseline and scope are stable.",
+        "gate": "enforce-no-regression; ratchet upward by at least five percentage points per agreed release",
+        "components": {
+          "backend_java": {
+            "threshold_source": "approved same-commit CI baseline plus agreed increment"
+          },
+          "frontend_typescript": {
+            "threshold_source": "approved same-commit CI baseline plus agreed increment"
+          }
+        }
+      }
+    ],
+    "measured_baseline": {
+      "run_id": "43414310448",
+      "run_number": 16,
+      "commit": "2569f4358502fc0725a318b002f50798a823d0c0",
+      "environment": "GitHub Actions; QA aislado en Docker",
+      "backend_java": {
+        "lines_pct": 50.11,
+        "branches_pct": 28.73
+      },
+      "frontend_angular": {
+        "lines_pct": 73.4,
+        "branches_pct": 56.0
+      },
+      "interpretation": "La línea es la unidad de código fuente ejecutada por las pruebas; la rama es una alternativa de decisión. Los valores son componente-específicos y usan sus respectivos denominadores JaCoCo/Karma del build 16."
+    },
+    "interpretation": "La baseline numérica se midió en GitHub Actions build 16. Líneas y ramas no se promedian entre backend y frontend. La siguiente meta de revisión es baseline +5 puntos porcentuales por componente para líneas y ramas críticas; esos incrementos son objetivos de revisión, no gates de aprobación actuales."
+  },
+  "static_analysis": {
+    "status": "reported",
+    "tools": [
+      "SpotBugs",
+      "TypeScript Compiler"
+    ],
+    "ci_step_outcome": "unknown",
+    "ci_typescript_step_outcome": "unknown",
+    "scope": "SpotBugs revisa bytecode Java. TypeScript Compiler analiza tipos del frontend; cada TS#### se publica como regla/diagnóstico y se compara con una línea base versionada.",
+    "findings_by_priority": {
+      "2": 9
+    },
+    "findings_by_rule_and_baseline": [
+      {
+        "rule": "CT_CONSTRUCTOR_THROW",
+        "priority": "2",
+        "baseline_status": "existing",
+        "count": 1
+      },
+      {
+        "rule": "EI_EXPOSE_REP2",
+        "priority": "2",
+        "baseline_status": "existing",
+        "count": 8
+      }
+    ],
+    "finding_count": 9,
+    "baseline_file": "qa/metrics/spotbugs-baseline.json",
+    "evidence": "backend/target/spotbugsXml.xml",
+    "typescript": {
+      "status": "passed",
+      "finding_count": 0,
+      "new_finding_count": 0,
+      "counts_by_severity_rule_and_baseline": [],
+      "baseline_file": "qa/metrics/typescript-baseline.json",
+      "evidence": "frontend/target/typescript-analysis.json",
+      "interpretation": "TS#### identifica la regla/diagnóstico del compilador; error es severidad reportada por el compilador, no severidad de impacto de negocio. La línea base permite separar diagnósticos conocidos de nuevos por archivo, regla y mensaje."
+    },
+    "new_finding_count": 0,
+    "existing_finding_count": 9,
+    "baseline_run_id": "43408870524",
+    "note": "P1/P2/P3 es prioridad del analizador; no equivale a severidad confirmada del producto. Regla/clase ausente de la baseline se marca nueva y requiere triage."
+  },
+  "defects": {
+    "confirmed_count": 4,
+    "triaged_confirmed_open_total": 8,
+    "rate_per_100_executed_cases": 11.11,
+    "severity_distribution": {
+      "Media": 3,
+      "Alta": 1
+    },
+    "candidate_failed_cases": 5,
+    "evidence_register": "qa/metrics/defect-register.json",
+    "denominator_executed_unique_cases": 36,
+    "reason": "Cuenta defectos únicos confirmados y vinculados a casos fallidos del resumen de esta corrida; no todos los fallos de suite se cuentan automáticamente como defectos."
+  },
+  "defect_leakage": {
+    "rate_pct": null,
+    "reason": "Falta una fuente de incidencias posliberación vinculadas a versión y periodo de observación."
+  },
+  "flaky_tests": {
+    "status": "not_comparable",
+    "rate_pct": null,
+    "cases_repeated": null,
+    "cases_flaky": null,
+    "runs": 3,
+    "fingerprint_matches": false,
+    "reason": "El código/runner actual difiere del fingerprint de la línea base; repetir con versión y entorno constantes.",
+    "historical_controlled_baseline": {
+      "commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+      "environment": "QA local aislado; Chromium/Playwright; misma semilla SQL QA; ocho IDs Playwright; ejecución secuencial.",
+      "cases_repeated": 8,
+      "cases_flaky": 0,
+      "rate_pct": 0.0,
+      "runs": 3,
+      "retries": "Sin reintentos configurados; retries por corrida: 0.",
+      "interpretation": "0/8 = 0% en esta muestra significa que los ocho casos conservaron el mismo estado en las tres repeticiones controladas. No afirma estabilidad de todas las suites ni de commits distintos."
+    }
+  },
+  "automation": {
+    "catalog_case_count": 49,
+    "unique_cases_with_automated_result_this_build": 36,
+    "cases_not_represented_this_build": 13,
+    "execution_coverage_pct": 73.47,
+    "classification_status": "classified",
+    "automation_classification": {
+      "automated_linked": 36,
+      "automation_gap": 11,
+      "manual_only": 2,
+      "applicable_cases": 47,
+      "automation_rate_pct": 76.6,
+      "source": "qa/metrics/automation-classification.json"
+    },
+    "automation_rate_pct": 76.6,
+    "automation_rate_reason": "Casos automatizados trazados / casos automatizables; los manual_only se excluyen del denominador y los automation_gap permanecen en él.",
+    "linked_result_cases": {
+      "passed": 31,
+      "failed": 5,
+      "other_status": 0
+    },
+    "interpretation": "execution_coverage_pct es la fracción del catálogo con resultado automatizado en este build; no representa la tasa de automatización del catálogo."
+  },
+  "k6": [
+    {
+      "profile": "smoke",
+      "label": "humo",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 30.173,
+      "vus_max": 1,
+      "iterations": 30,
+      "requests_total": 60,
+      "throughput_requests_per_second": 1.9885489894301018,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 3.78075925,
+        "p99": 4.32724819
+      },
+      "api_latency_ms": {
+        "p95": 4.092182949999999,
+        "p99": 4.37706589
+      },
+      "page_latency_ms": {
+        "p95": 1.770436999999998,
+        "p99": 2.31450447
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-smoke/summary.json"
+    },
+    {
+      "profile": "baseline",
+      "label": "línea base",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 120.677,
+      "vus_max": 3,
+      "iterations": 360,
+      "requests_total": 720,
+      "throughput_requests_per_second": 5.966329985608489,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 4.111592599999998,
+        "p99": 5.615745539999989
+      },
+      "api_latency_ms": {
+        "p95": 4.786110550000002,
+        "p99": 7.238613900000001
+      },
+      "page_latency_ms": {
+        "p95": 2.57898395,
+        "p99": 3.017158730000003
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-baseline/summary.json"
+    },
+    {
+      "profile": "moderate",
+      "label": "carga moderada",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 180.91,
+      "vus_max": 8,
+      "iterations": 1440,
+      "requests_total": 2880,
+      "throughput_requests_per_second": 15.91951502828509,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 4.010375849999997,
+        "p99": 6.273974900000001
+      },
+      "api_latency_ms": {
+        "p95": 4.501565849999998,
+        "p99": 6.8614560299999985
+      },
+      "page_latency_ms": {
+        "p95": 3.6633188499999996,
+        "p99": 4.634356469999994
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-moderate/summary.json"
+    },
+    {
+      "profile": "stress",
+      "label": "estrés progresivo",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 240.865,
+      "vus_max": 600,
+      "iterations": 60079,
+      "requests_total": 120158,
+      "throughput_requests_per_second": 498.8602487547884,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 2.3713605499999986,
+        "p99": 4.338293829999996
+      },
+      "api_latency_ms": {
+        "p95": 1.6955589999999994,
+        "p99": 3.1896038
+      },
+      "page_latency_ms": {
+        "p95": 2.723080199999999,
+        "p99": 5.982934640000006
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-stress/summary.json"
+    },
+    {
+      "profile": "spike",
+      "label": "pico repentino",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 50.638,
+      "vus_max": 1000,
+      "iterations": 40255,
+      "requests_total": 80510,
+      "throughput_requests_per_second": 1589.9134494188577,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 7.961817950000017,
+        "p99": 31.241019810000004
+      },
+      "api_latency_ms": {
+        "p95": 3.237919999999997,
+        "p99": 8.057624699999987
+      },
+      "page_latency_ms": {
+        "p95": 17.070052799999953,
+        "p99": 42.447696339999936
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-spike/summary.json"
+    },
+    {
+      "profile": "sustained",
+      "label": "carga sostenida",
+      "status": "passed",
+      "thresholds_defined": 5,
+      "thresholds_passed": 5,
+      "duration_seconds": 600.608,
+      "vus_max": 100,
+      "iterations": 59800,
+      "requests_total": 119600,
+      "throughput_requests_per_second": 199.1314989452235,
+      "request_error_rate_pct": 0.0,
+      "check_success_rate_pct": 100.0,
+      "http_req_duration_ms": {
+        "p95": 5.564259499999999,
+        "p99": 12.003977639999949
+      },
+      "api_latency_ms": {
+        "p95": 2.8186577999999995,
+        "p99": 5.6570594000000085
+      },
+      "page_latency_ms": {
+        "p95": 7.467547949999998,
+        "p99": 17.224578620000003
+      },
+      "evidence": "qa/artifacts/build-16-48a2e976/k6-sustained/summary.json"
+    }
+  ],
+  "testlink": {
+    "summary_generated": true,
+    "summary_file": "qa/testlink/results/current-run.json",
+    "publication_status": "skipped",
+    "publication_report_file": null
+  },
+  "evidence": {
+    "run_directory": "qa/artifacts/build-16-48a2e976",
+    "artifact_files": [
+      "backend/target/surefire-reports/",
+      "backend/target/site/jacoco/",
+      "backend/target/spotbugsXml.xml",
+      "qa/metrics/spotbugs-baseline.json",
+      "frontend/target/typescript-analysis.json",
+      "frontend/coverage/",
+      "qa/metrics/typescript-baseline.json",
+      "qa/metrics/coverage-targets.json",
+      "qa/artifacts/build-16-48a2e976",
+      "qa/testlink/results/current-run.json"
+    ]
+  }
+}

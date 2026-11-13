@@ -13,6 +13,7 @@ import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -98,12 +99,27 @@ def suite_from_counts(
     return {
         "suite": name,
         "tool": tool,
+        "count_unit": suite_count_unit(name),
         "status": status,
         "counts": counts_summary(total, passed, failed, skipped, blocked),
         "ci_step_outcome": outcome or "unknown",
         "evidence": evidence or [],
         **({"note": note} if note else {}),
     }
+
+
+def suite_count_unit(name: str) -> str:
+    """Describe the counted observation for each suite; suite counts are not interchangeable."""
+    units = {
+        "Backend": "prueba JUnit/Surefire",
+        "Frontend unitarias": "especificación Karma/Jasmine",
+        "API": "aserción Newman (solicitudes informadas aparte)",
+        "Interfaz": "escenario Behave",
+        "Compatibilidad": "prueba Playwright resumida (no combinaciones internas)",
+        "Accesibilidad automática": "ruta/página analizada por axe-core",
+        "Casos automatizados seleccionados": "caso de prueba Playwright",
+    }
+    return units.get(name, "elemento informado por la herramienta; ver evidencia de suite")
 
 
 def junit_counts(paths: list[Path]) -> tuple[int, int, int, int]:
@@ -307,7 +323,9 @@ def read_k6(run_dir: Path) -> list[dict[str, Any]]:
             "http_req_duration_ms": {"p95": http_duration.get("p(95)"), "p99": http_duration.get("p(99)")},
             "api_latency_ms": {"p95": api_duration.get("p(95)"), "p99": api_duration.get("p(99)")},
             "page_latency_ms": {"p95": page_duration.get("p(95)"), "p99": page_duration.get("p(99)")},
-            "evidence": str(path).replace("\\", "/"),
+            # Keep evidence links portable. The downloaded CI artifact may be
+            # extracted under a machine-specific temporary directory.
+            "evidence": f"qa/artifacts/{run_dir.name}/k6-{slug}/summary.json",
         })
     return profiles
 
@@ -445,7 +463,9 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
         "ci_typescript_step_outcome": outcomes.get("static_typescript", "unknown"),
         "scope": "SpotBugs revisa bytecode Java. TypeScript Compiler analiza tipos del frontend; cada TS#### se publica como regla/diagnóstico y se compara con una línea base versionada.",
         "findings_by_priority": {},
+        "findings_by_rule_and_baseline": [],
         "finding_count": None,
+        "baseline_file": "qa/metrics/spotbugs-baseline.json",
         "evidence": "backend/target/spotbugsXml.xml" if static_path.is_file() else None,
         "typescript": {
             "status": typescript_report.get("status", "not_reported"),
@@ -461,13 +481,37 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
         try:
             spotbugs_root = ET.parse(static_path).getroot()
             findings: dict[str, int] = {}
+            baseline = read_json(repo / "qa/metrics/spotbugs-baseline.json") or {}
+            baseline_counts = Counter(
+                (str(item.get("type", "unknown")), str(item.get("primary_class", "")))
+                for item in baseline.get("findings", [])
+            )
+            seen: Counter[tuple[str, str]] = Counter()
+            rule_buckets: dict[tuple[str, str, str], int] = {}
             for item in spotbugs_root.findall("BugInstance"):
                 priority = item.get("priority", "unknown")
                 findings[priority] = findings.get(priority, 0) + 1
+                bug_type = item.get("type", "unknown")
+                primary_class = next((node.get("classname", "") for node in item.findall("Class")
+                                      if node.get("primary") == "true"), "")
+                key = (bug_type, primary_class)
+                seen[key] += 1
+                baseline_status = "existing" if seen[key] <= baseline_counts[key] else "new"
+                bucket = (bug_type, priority, baseline_status)
+                rule_buckets[bucket] = rule_buckets.get(bucket, 0) + 1
             static_analysis["findings_by_priority"] = findings
             static_analysis["finding_count"] = sum(findings.values())
+            static_analysis["new_finding_count"] = sum(count for (_, _, status), count in rule_buckets.items()
+                                                        if status == "new")
+            static_analysis["existing_finding_count"] = sum(count for (_, _, status), count in rule_buckets.items()
+                                                             if status == "existing")
+            static_analysis["findings_by_rule_and_baseline"] = [
+                {"rule": rule, "priority": priority, "baseline_status": status, "count": count}
+                for (rule, priority, status), count in sorted(rule_buckets.items())
+            ]
+            static_analysis["baseline_run_id"] = baseline.get("baseline_run_id")
             static_analysis["status"] = "reported" if typescript_report.get("status") in ("passed", "failed") else "partial"
-            static_analysis["note"] = "Prioridad del analizador, no severidad confirmada; cada hallazgo requiere triage."
+            static_analysis["note"] = "P1/P2/P3 es prioridad del analizador; no equivale a severidad confirmada del producto. Regla/clase ausente de la baseline se marca nueva y requiere triage."
         except (ET.ParseError, OSError) as exc:
             static_analysis["status"] = "invalid_report"
             static_analysis["reason"] = str(exc)
@@ -537,7 +581,8 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
             "run_id": os.getenv("CI_RUN_ID") or run_dir.name,
             "commit": os.getenv("CI_COMMIT") or os.getenv("GIT_COMMIT") or os.getenv("GITHUB_SHA") or git_value(repo, "rev-parse", "HEAD"),
             "branch": os.getenv("CI_BRANCH") or os.getenv("GIT_BRANCH") or os.getenv("GITHUB_REF_NAME") or git_value(repo, "rev-parse", "--abbrev-ref", "HEAD"),
-            "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "timestamp_utc": os.getenv("CI_TIMESTAMP_UTC") or datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "report_generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "environment": "QA aislado",
             "build_result": overall,
             "run_url": os.getenv("CI_RUN_URL") or os.getenv("BUILD_URL") or github_run_url or None,
@@ -601,6 +646,7 @@ def build_summary(repo: Path, run_dir: Path, testlink_summary: Path | None = Non
                 "backend/target/surefire-reports/",
                 "backend/target/site/jacoco/",
                 "backend/target/spotbugsXml.xml",
+                "qa/metrics/spotbugs-baseline.json",
                 "frontend/target/typescript-analysis.json",
                 "frontend/coverage/",
                 "qa/metrics/typescript-baseline.json",
@@ -618,16 +664,19 @@ def html_report(summary: dict[str, Any]) -> str:
     rates = summary["summary"]["automated_linked_cases"]
     suites = summary["suites"]
     suite_rows = "".join(
-        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-            html.escape(row["suite"]), html.escape(row["tool"]), html.escape(row["status"]),
-            row["counts"]["passed"], row["counts"]["failed"],
+        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+            html.escape(row["suite"]), html.escape(row["tool"]), html.escape(row.get("count_unit", suite_count_unit(row["suite"]))),
+            html.escape(row["status"]), row["counts"]["total"],
+            row["counts"]["passed"], row["counts"]["failed"], row["counts"]["skipped"], row["counts"]["blocked"],
             "N/A" if row["counts"]["pass_rate_pct"] is None else f"{row['counts']['pass_rate_pct']:.2f}%",
         ) for row in suites
     )
     k6_rows = "".join(
-        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
             html.escape(item["label"]), html.escape(item["status"]), item.get("vus_max") or "N/A",
-            item.get("duration_seconds") or "N/A", item.get("api_latency_ms", {}).get("p95") or "N/A",
+            item.get("duration_seconds") or "N/A", item.get("requests_total") or "N/A",
+            "N/A" if item.get("throughput_requests_per_second") is None else f"{item['throughput_requests_per_second']:.2f}",
+            item.get("api_latency_ms", {}).get("p95") or "N/A", item.get("api_latency_ms", {}).get("p99") or "N/A",
             "N/A" if item.get("request_error_rate_pct") is None else f"{item['request_error_rate_pct']:.4f}%",
         ) for item in summary["k6"]
     )
@@ -645,16 +694,28 @@ def html_report(summary: dict[str, Any]) -> str:
             html.escape(str(stage.get("purpose", ""))),
             html.escape(str(stage.get("gate", ""))),
             html.escape(
-                f"Backend +{stage.get('components', {}).get('backend_java', {}).get('line_delta_pct_points', 'N/A')} p.p. líneas/ramas; "
-                f"Frontend +{stage.get('components', {}).get('frontend_typescript', {}).get('line_delta_pct_points', 'N/A')} p.p. líneas/ramas"
-                if stage.get("stage") == "next_increment" else
-                "Umbral desde primera corrida completa comparable" if stage.get("stage") == "baseline" else
+                (
+                    f"Backend Java: líneas {stage.get('components', {}).get('backend_java', {}).get('line_pct', 'N/A')}%, "
+                    f"ramas {stage.get('components', {}).get('backend_java', {}).get('branch_pct', 'N/A')}%; "
+                    f"frontend: líneas {stage.get('components', {}).get('frontend_typescript', {}).get('line_pct', 'N/A')}%, "
+                    f"ramas {stage.get('components', {}).get('frontend_typescript', {}).get('branch_pct', 'N/A')}%"
+                ) if stage.get("stage") == "baseline" else
+                (
+                    f"Backend Java: líneas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('backend_java', {}).get('lines_pct', 0)) + float(stage.get('components', {}).get('backend_java', {}).get('line_delta_pct_points', 0)):.2f}%, "
+                    f"ramas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('backend_java', {}).get('branches_pct', 0)) + float(stage.get('components', {}).get('backend_java', {}).get('branch_delta_pct_points', 0)):.2f}%; "
+                    f"frontend: líneas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('frontend_angular', {}).get('lines_pct', 0)) + float(stage.get('components', {}).get('frontend_typescript', {}).get('line_delta_pct_points', 0)):.2f}%, "
+                    f"ramas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('frontend_angular', {}).get('branches_pct', 0)) + float(stage.get('components', {}).get('frontend_typescript', {}).get('branch_delta_pct_points', 0)):.2f}% (baseline +5 p.p.)"
+                ) if stage.get("stage") == "next_increment" else
                 "Umbral por componente aprobado desde su baseline"
             ),
         ) for stage in summary.get("coverage_targets", {}).get("stages", [])
     )
     static = summary["static_analysis"]
     priorities = ", ".join(f"P{priority}: {count}" for priority, count in sorted(static.get("findings_by_priority", {}).items())) or "sin hallazgos reportados"
+    spotbugs_rules = ", ".join(
+        f"{item['rule']} (P{item['priority']}, {item['baseline_status']}): {item['count']}"
+        for item in static.get("findings_by_rule_and_baseline", [])
+    ) or "sin hallazgos SpotBugs reportados"
     ts_analysis = static.get("typescript", {})
     ts_rules = ", ".join(
         f"{item['rule']} ({item['severity']}, {item['baseline_status']}): {item['count']}"
@@ -696,7 +757,7 @@ def html_report(summary: dict[str, Any]) -> str:
 body{{font:15px/1.5 system-ui,Segoe UI,sans-serif;max-width:1200px;margin:2rem auto;padding:0 1rem;color:#24292f}}
 h1,h2{{color:#6b3e24}} .meta,.card{{background:#f6f8fa;padding:1rem;border-radius:8px;margin:.7rem 0}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem}}
-.metric{{font-size:1.5rem;font-weight:700}} table{{width:100%;border-collapse:collapse;margin:1rem 0}}
+.metric{{font-size:1.5rem;font-weight:700}} table{{width:100%;border-collapse:collapse;margin:1rem 0;display:block;overflow-x:auto}}
 th,td{{text-align:left;border-bottom:1px solid #d8dee4;padding:.55rem;vertical-align:top}}
 th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na{{color:#57606a}}
 </style></head><body>
@@ -704,7 +765,7 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <div class="meta"><b>Build:</b> {html.escape(str(meta.get('build_id')))} · <b>Proveedor:</b> {html.escape(str(meta.get('provider')))} ·
 <b>Resultado:</b> <span class="{html.escape(meta.get('build_result',''))}">{html.escape(str(meta.get('build_result')))}</span><br>
 <b>Commit:</b> {html.escape(str(meta.get('commit') or 'N/A'))} · <b>Rama:</b> {html.escape(str(meta.get('branch') or 'N/A'))} ·
-<b>Entorno:</b> {html.escape(str(meta.get('environment')))} · <b>UTC:</b> {html.escape(str(meta.get('timestamp_utc')))}<br>
+<b>Entorno:</b> {html.escape(str(meta.get('environment')))} · <b>UTC de ejecución:</b> {html.escape(str(meta.get('timestamp_utc')))} · <b>UTC de generación del reporte:</b> {html.escape(str(meta.get('report_generated_at_utc', 'N/A')))}<br>
 <b>Ejecución:</b> {('<a href="' + html.escape(meta['run_url'], quote=True) + '">abrir build</a>') if meta.get('run_url') else 'N/A'}</div>
 <div class="grid">
 <div class="card"><div>Casos automatizados trazables ejecutados</div><div class="metric">{rates['total_executed']}</div></div>
@@ -713,17 +774,17 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <div class="card"><div>Pass rate / fail rate</div><div class="metric">{('N/A' if rates['pass_rate_pct'] is None else f"{rates['pass_rate_pct']:.2f}% / {rates['fail_rate_pct']:.2f}%")}</div></div>
 </div>
 <p><b>Qué significan estos cuatro valores:</b> el total cuenta IDs de caso únicos que esta corrida automatizada vinculó con TestLink y dejó en aprobado o no aprobado; si un ID aparece más de una vez, se cuenta una vez. “Aprobados” y “No aprobados” son esos resultados observados. El pass rate se calcula como aprobados ÷ (aprobados + no aprobados) × 100; el fail rate usa no aprobados en el numerador y el mismo denominador. Casos omitidos, bloqueados, manuales y sin resultado no entran en ese cálculo. Por eso el fail rate no equivale a tasa de defectos: un fallo puede provenir del producto, el script, los datos o el entorno y requiere clasificación.</p>
-<h2>Resultados por suite</h2><table><thead><tr><th>Suite</th><th>Herramienta</th><th>Estado</th><th>Aprobados</th><th>Fallidos</th><th>Pass rate</th></tr></thead><tbody>{suite_rows}</tbody></table>
-<p><b>Cómo leer una fila:</b> la suite es el grupo ejecutado y la herramienta identifica cómo se ejecutó. Los conteos aprobados/fallidos dependen del tipo de reporte de esa suite (por ejemplo, pruebas JUnit, casos Gherkin o aserciones Newman); no deben sumarse entre suites como si fueran la misma unidad. El pass rate de cada suite es aprobados ÷ (aprobados + fallidos). Bloqueados y omitidos quedan fuera y deben revisarse aparte. Un estado fallido del build significa que al menos una condición de calidad no se cumplió; no prueba por sí solo que todas las suites fallaron.</p>
+<h2>Resultados por suite</h2><table><thead><tr><th>Suite</th><th>Herramienta</th><th>Unidad contada</th><th>Estado</th><th>Total reportado</th><th>Aprobados</th><th>Fallidos</th><th>Omitidos</th><th>Bloqueados</th><th>Pass rate</th></tr></thead><tbody>{suite_rows}</tbody></table>
+<p><b>Cómo leer una fila:</b> “Total reportado” incluye los elementos que la herramienta encontró en su reporte; “aprobados”, “fallidos”, “omitidos” y “bloqueados” usan la unidad indicada para esa suite. El denominador de pass/fail es aprobados + fallidos; “Pass rate” = aprobados ÷ ese denominador × 100. Omitidos y bloqueados no se consideran ejecutados y quedan fuera del porcentaje. Newman cuenta aserciones, no solicitudes: el número de solicitudes aparece en la nota de esa suite y no se suma a las aserciones. Las unidades distintas entre suites no se suman. “Estado” resume la suite; un build fallido señala al menos una condición no satisfecha, no que todas las suites hayan fallado.</p>
 <h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul>
 <p><b>Significado:</b> cada porcentaje divide elementos cubiertos por elementos instrumentados de ese mismo componente y tipo (líneas, ramas, instrucciones o funciones, según reporte). El valor describe cuánto código alcanzaron las pruebas, no si ese código funciona correctamente ni cuántos casos del catálogo se ejecutaron. Backend Java y frontend Angular tienen denominadores distintos, por lo que no se promedian en una cifra general.</p>
 <h3>Metas escalonadas</h3><table><thead><tr><th>Etapa</th><th>Propósito</th><th>Uso en el gate</th><th>Meta por componente</th></tr></thead><tbody>{coverage_stage_rows or '<tr><td colspan="4">No hay etapas de cobertura definidas.</td></tr>'}</tbody></table>
 <p>{html.escape(str(summary.get('coverage_targets', {}).get('interpretation', 'La meta de cobertura debe compararse con el mismo componente y herramienta.')))}</p>
 <p><b>Relación con objetivos:</b> esta cobertura aporta evidencia a OE3 (pruebas unitarias/integración) y OE7 (métricas); no demuestra por sí sola cumplimiento completo de ninguno.</p>
-<h2>K6</h2><table><thead><tr><th>Perfil</th><th>Estado</th><th>VUs máx.</th><th>Duración (s)</th><th>API p95 (ms)</th><th>Error de solicitudes</th></tr></thead><tbody>{k6_rows}</tbody></table>
-<p><b>Significado de los datos:</b> el perfil identifica el patrón de carga; VUs son usuarios virtuales simultáneos configurados; duración es el tiempo medido en segundos; API p95 es el tiempo de respuesta bajo el cual terminó el 95% de las solicitudes medidas; la tasa de error es solicitudes fallidas ÷ solicitudes totales × 100. “Aprobado” solo significa que el perfil produjo un resumen válido y todos sus umbrales configurados se cumplieron. Los seis perfiles aportan evidencia a OE5; los resúmenes de carga y sus umbrales versionados también alimentan OE7. No se generaliza el resultado a producción.</p>
+<h2>K6</h2><table><thead><tr><th>Perfil</th><th>Estado</th><th>VUs máx.</th><th>Duración (s)</th><th>Solicitudes</th><th>Caudal (req/s)</th><th>API p95 (ms)</th><th>API p99 (ms)</th><th>Error de solicitudes</th></tr></thead><tbody>{k6_rows}</tbody></table>
+<p><b>Significado de cada dato K6:</b> el perfil describe el patrón de llegada de usuarios; VUs máx. es el máximo de usuarios virtuales concurrentes observado/configurado; duración es el tiempo total de medición en segundos; solicitudes es el total de peticiones HTTP emitidas por ese perfil; caudal son solicitudes por segundo; API p95 y p99 son percentiles de latencia (el 95% y 99% de observaciones queda en o por debajo de ese tiempo); error de solicitudes = peticiones fallidas ÷ peticiones totales × 100. El estado solo es aprobado si el reporte es válido y todos los umbrales del perfil pasan. El patrón y los umbrales aportan evidencia a OE5; las tasas y latencias observadas alimentan OE7. Estos resultados describen QA aislado y no garantizan el mismo comportamiento en producción.</p>
 <h2>Métricas calculadas y límites de evidencia</h2><ul>
-<li><b>Análisis estático Java:</b> {html.escape(str(static.get('finding_count') if static.get('finding_count') is not None else 'N/A'))} hallazgos SpotBugs ({html.escape(priorities)}). P1/P2/P3 son prioridades asignadas por SpotBugs, no severidad confirmada del defecto. Los hallazgos deben revisarse por regla y compararse con la línea base; alertas repetidas no son automáticamente defectos nuevos.</li>
+<li><b>Análisis estático Java:</b> {html.escape(str(static.get('finding_count') if static.get('finding_count') is not None else 'N/A'))} hallazgos SpotBugs: {html.escape(str(static.get('new_finding_count', 'N/A')))} nuevos y {html.escape(str(static.get('existing_finding_count', 'N/A')))} existentes frente a la corrida base {html.escape(str(static.get('baseline_run_id', 'N/A')))}. Por regla/prioridad/estado: {html.escape(spotbugs_rules)}. P1/P2/P3 son categorías de prioridad que el analizador asigna, no severidad confirmada del defecto. La clave de comparación es regla + clase primaria; líneas/instanceHash no se usan para evitar contar el mismo hallazgo otra vez al moverse de línea. Los nuevos requieren triage y no se suman automáticamente al registro de defectos.</li>
 <li><b>Análisis estático TypeScript:</b> {html.escape(str(ts_analysis.get('finding_count') if ts_analysis.get('finding_count') is not None else 'N/A'))} diagnósticos, {html.escape(str(ts_analysis.get('new_finding_count') if ts_analysis.get('new_finding_count') is not None else 'N/A'))} nuevos frente a baseline; detalle por regla/severidad/estado: {html.escape(ts_rules)}. TS#### es el código de diagnóstico del compilador; “error” indica severidad técnica del compilador y no impacto de negocio. El estado nuevo/existente compara archivo, regla y mensaje. Evidencia: {html.escape(str(ts_analysis.get('evidence') or 'reporte ausente'))}.</li>
 <li><b>Defectos confirmados:</b> {defects['confirmed_count']} defectos únicos vinculados a IDs fallidos del resumen; tasa {defects['rate_per_100_executed_cases'] if defects['rate_per_100_executed_cases'] is not None else 'N/A'} por cada 100 casos automatizados únicos ejecutados (defectos confirmados ÷ {defects.get('denominator_executed_unique_cases', 0)} casos ejecutados × 100). Distribución de severidad: {html.escape(json.dumps(defects['severity_distribution'], ensure_ascii=False))}; total triado abierto en el registro: {defects['triaged_confirmed_open_total']}. El total abierto es acumulado y no se usa como numerador de esta corrida salvo que coincida con un caso fallido actual.</li>
 <li><b>Defect leakage:</b> N/A, no medible. La fórmula es defectos confirmados posteriores a la liberación ÷ defectos confirmados preliberación y posliberación × 100. Falta asociar incidencias a una versión liberada y a un periodo de observación; N/A significa ausencia de base válida, no cero defectos.</li>

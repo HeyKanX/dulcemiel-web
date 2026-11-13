@@ -8,6 +8,7 @@
 - `stability-baseline.json`: repeticiones controladas; solo se calcula flaky rate cuando código, conjunto y entorno coinciden.
 - `coverage-targets.json`: línea base CI por congelar y aumentos por etapas. Un umbral `null` indica que el valor estable todavía no se ha medido.
 - `typescript-baseline.json`: reglas TypeScript existentes frente a las cuales se clasifican diagnósticos nuevos.
+- `spotbugs-baseline.json`: baseline del build 15; usa el par regla SpotBugs + clase primaria para separar observaciones existentes y nuevas sin depender de números de línea.
 
 ## Salidas por ejecución
 
@@ -19,5 +20,6 @@ El reporte HTML explica los conteos, unidades, fórmulas y denominadores. Result
 
 - Defect leakage es `N/A` sin defectos posliberación vinculados a una versión y periodo observado.
 - La severidad informada por un analizador no sustituye el triage de impacto del defecto.
+- La prioridad P1/P2/P3 de SpotBugs y el tipo `TS####` del compilador son categorías del analizador; no equivalen directamente a severidad de negocio.
 - Los resultados manuales no se incluyen en el pass/fail automático del pipeline.
 - El cumplimiento porcentual de cada OE solo se calcula si existe una fórmula y ponderación aprobada en la rúbrica.

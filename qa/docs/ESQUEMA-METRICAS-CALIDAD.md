@@ -1,6 +1,6 @@
 # Esquema propuesto de métricas de calidad — Dulce Miel
 
-**Estado:** generador y etapas de análisis/cobertura integrados en Jenkins y GitHub Actions; build 15 medido el 13-11-2026. El analizador de TypeScript y su línea base vacía se añadieron después de ese build y se validarán en la siguiente corrida completa. La publicación real de cada build debe verificarse en el artefacto de la plataforma.
+**Estado:** generador y etapas de análisis/cobertura integrados en Jenkins y GitHub Actions; build 16 medido el 13-11-2026. SpotBugs y TypeScript tienen líneas base versionadas y el HTML se regeneró con explicación de unidades, denominadores y relación con OE1–OE7. La publicación real de cada build debe verificarse en el artefacto de la plataforma.
 **Alcance:** pruebas automatizadas ejecutadas por Jenkins o GitHub Actions. Los recorridos manuales quedan separados y no se mezclan en los porcentajes del pipeline.
 
 ## 1. Formatos de salida
@@ -54,7 +54,7 @@ Se calcula por suite y para el conjunto automatizado del build. El conjunto solo
 
 ### Análisis estático
 
-- Conteo de hallazgos por herramienta, regla/categoría y severidad; separar nuevos de existentes mediante comparación con la línea base del branch.
+- Conteo de hallazgos por herramienta, regla/categoría y severidad técnica; separar nuevos de existentes mediante comparación con una línea base versionada. SpotBugs se compara por regla + clase primaria y TypeScript por archivo + código TS#### + mensaje.
 - `densidad de hallazgos (por KLOC) = hallazgos / miles de líneas de código analizadas`, solo si se conserva el mismo alcance de archivos entre builds.
 - Complejidad: registrar funciones que superan la regla acordada y su valor; no sumar métricas de herramientas distintas en un solo número.
 - Los hallazgos de análisis estático no se cuentan automáticamente como defectos confirmados. Se mantienen como hallazgos hasta ser triados.
@@ -120,13 +120,13 @@ Las métricas de cobertura, análisis estático, defectos y K6 tienen tablas/dat
 
 ## 6. Integración actual y límites de interpretación
 
-`qa/metrics/generate_quality_report.py` crea el JSON y el HTML en cada ejecución. Jenkins lo invoca en `post { always }`; GitHub Actions lo genera antes de Quality Gate para que un fallo de métricas también quede visible y archiva después los reportes. Ambos flujos mantienen visibles los fallos y ejecutan las etapas posteriores según su configuración.
+`qa/metrics/generate_quality_report.py` crea el JSON y el HTML en cada ejecución. Jenkins lo invoca en `post { always }`; GitHub Actions lo genera antes de Quality Gate para que un fallo de métricas también quede visible y archiva después los reportes. Ambos flujos mantienen visibles los fallos y ejecutan las etapas posteriores según su configuración. El build 16 (run `43414310448`) fija la baseline de cobertura Java/Angular y muestra cinco casos automatizados no aprobados; el gate fallido conserva esos resultados.
 
 El resumen lee JUnit/Surefire y Behave, log de Karma, datos Newman, Playwright, axe-core, los seis resúmenes K6, cobertura HTML de Angular, XML JaCoCo y el resumen actual de TestLink. El paso backend ejecuta `mvn test` y luego solicita `jacoco:report` incluso si las pruebas fallan; el código de salida original de Maven se conserva para que el build no oculte un fallo.
 
 El pass/fail trazable de TestLink se calcula por ID único, una vez por corrida. La cobertura de ejecución del catálogo indica cuántos IDs tuvieron estado automatizado en ese build; no es cobertura de código ni tasa de automatización. K6 se informa por perfil y solo aprueba si existe resumen y pasan todos los umbrales. Si una etapa falla sin resumen, aparece bloqueada/incompleta, no aprobada.
 
-La línea base local del 12-11-2026 mide cobertura de JaCoCo y Angular, cuenta hallazgos SpotBugs por prioridad (sin tratarlos como defectos confirmados), calcula defectos únicos del registro de triage enlazados a fallos, mide tres repeticiones estables de ocho casos Playwright y clasifica los casos del catálogo por automatización enlazada o ejecución exclusivamente manual. Defect leakage queda como **No medible**, no como cero, porque aún no existe una fuente de incidencias posliberación asociada a versión y periodo. Para medirlo, registrar por cada versión fecha de liberación, periodo observado, defectos confirmados preliberación y postliberación y vínculo al ID del defecto.
+El build 16 fija la baseline de cobertura de JaCoCo y Angular, compara hallazgos SpotBugs con su baseline del build 15 y registra TypeScript 5.2.2 con cero diagnósticos frente a una baseline vacía. También calcula defectos únicos del registro enlazados a fallos, mantiene como muestra histórica las tres repeticiones estables de ocho casos Playwright y clasifica los casos del catálogo por automatización enlazada, brecha o ejecución manual. Defect leakage queda como **N/A**, no como cero, porque aún no existe una fuente de incidencias posliberación asociada a versión y periodo. Para medirlo, registrar por cada versión la fecha de liberación, periodo observado, defectos confirmados preliberación y posliberación y vínculo al ID del defecto.
 
 Los recorridos manuales de teclado y Narrador no entran al resultado de los pipelines; se conservan en TestLink como evidencia manual. La tasa de automatización se calcula como casos automatizados y enlazados / casos aplicables (casos manuales puros excluidos; brechas incluidas). La cobertura de ejecución del build es un indicador distinto: IDs del catálogo con resultado actual / total del catálogo.
 
