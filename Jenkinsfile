@@ -115,6 +115,15 @@ pipeline {
             }
         }
 
+        stage('Playwright - casos funcionales y accesibilidad') {
+            when { expression { env.QA_ENV_READY == 'true' } }
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE', message: 'Los casos Playwright de la Fase 1 detectaron fallos o bloqueos; se continuará con K6 y la publicación de resultados.') {
+                    sh 'bash qa/jenkins/run-suite.sh PendingPlaywright'
+                }
+            }
+        }
+
         stage('K6 - humo') {
             when { expression { env.QA_ENV_READY == 'true' } }
             steps {

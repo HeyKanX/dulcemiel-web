@@ -2,7 +2,7 @@
 set -euo pipefail
 suite="${1:-}"
 case "$suite" in
-  Newman|Behave|Compatibility|Axe|K6Smoke|K6Baseline|K6Moderate|K6Stress|K6Spike|K6Sustained) ;;
+  Newman|Behave|Compatibility|Axe|PendingPlaywright|K6Smoke|K6Baseline|K6Moderate|K6Stress|K6Spike|K6Sustained) ;;
   *) echo "Suite desconocida: $suite" >&2; exit 2 ;;
 esac
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -69,6 +69,10 @@ PY
   Axe)
     out="$artifact_root/accessibility-axe"; mkdir -p "$out"
     "$python" ./tests/non-functional/accessibility/axe_core_scan.py --base-url "$QA_WEB_URL" --output "$out" --fail-on-violations
+    ;;
+  PendingPlaywright)
+    out="$artifact_root/pending-playwright"; mkdir -p "$out"
+    QA_ARTIFACTS="$out" "$python" ./tests/non-functional/accessibility/pending_playwright_cases.py
     ;;
   K6*)
     profile="${suite#K6}"; profile="${profile,,}"

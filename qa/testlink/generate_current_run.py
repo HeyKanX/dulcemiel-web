@@ -72,8 +72,25 @@ def read_junit(results: dict, path: Path, source: str, method_map: dict | None =
         if detail_node is None:
             detail_node = case.find("error")
         detail = (detail_node.get("message", "fallo de aserción") if detail_node is not None else "Prueba automatizada aprobada.")
+        recorded = {}
+        system_out = case.findtext("system-out", "").strip()
+        if system_out:
+            try:
+                recorded = json.loads(system_out)
+            except json.JSONDecodeError:
+                recorded = {}
+        detail = recorded.get("detail") or detail
+        evidence_paths = []
+        for evidence in recorded.get("evidence_files", []):
+            candidate = path.parent / evidence
+            if candidate.is_file():
+                try:
+                    evidence_paths.append(candidate.resolve().relative_to(Path.cwd().resolve()).as_posix())
+                except ValueError:
+                    evidence_paths.append(str(candidate).replace("\\", "/"))
+        evidence_path = "; ".join(evidence_paths) if evidence_paths else str(path).replace("\\", "/")
         for case_id in sorted(ids):
-            add_result(results, case_id, status, source, detail, str(path).replace("\\", "/"))
+            add_result(results, case_id, status, source, detail, evidence_path)
 
 
 def read_newman(results: dict, path: Path) -> None:
@@ -190,6 +207,8 @@ def main() -> int:
         read_junit(results, path, "Maven/JUnit", BACKEND_CASES)
     for path in (run_dir / "ui-behave").glob("*.xml"):
         read_junit(results, path, "Behave/Selenium")
+    for path in (run_dir / "pending-playwright").glob("*.xml"):
+        read_junit(results, path, "Playwright; casos funcionales y accesibilidad")
     read_newman(results, run_dir / "api/newman.json")
     read_k6(results, run_dir)
     read_compatibility(results, run_dir / "compatibility/result.json")

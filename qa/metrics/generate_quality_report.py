@@ -351,6 +351,21 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
     if not behave_paths:
         suites[-1] = no_report_suite("Interfaz", "Behave/Selenium", outcomes.get("behave", "unknown"), "ui-behave/*.xml")
 
+    pending_playwright_paths = list((run_dir / "pending-playwright").glob("*.xml"))
+    pt, pp, pf, ps = junit_counts(pending_playwright_paths)
+    suites.append(suite_from_counts(
+        "Casos Fase 1 seleccionados", "Playwright", pt, pp, pf, ps,
+        outcomes.get("pending_playwright", "unknown"),
+        [str(path.relative_to(repo)).replace("\\", "/") if path.is_relative_to(repo) else path.name
+         for path in pending_playwright_paths],
+        "Ocho casos del registro; el estado se calcula desde JUnit de esta corrida, no desde resultados manuales previos.",
+    ))
+    if not pending_playwright_paths:
+        suites[-1] = no_report_suite(
+            "Casos Fase 1 seleccionados", "Playwright", outcomes.get("pending_playwright", "unknown"),
+            "pending-playwright/junit.xml",
+        )
+
     suites.append(read_compatibility(run_dir, outcomes.get("compatibility", "unknown")))
     suites.append(read_accessibility(run_dir, outcomes.get("accessibility", "unknown")))
     k6_profiles = read_k6(run_dir)
@@ -387,6 +402,12 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
         overall = "failure"
     if outcomes.get("prepare_qa") not in (None, "success"):
         overall = "failure"
+    github_run_url = ""
+    if os.getenv("GITHUB_SERVER_URL") and os.getenv("GITHUB_REPOSITORY") and os.getenv("GITHUB_RUN_ID"):
+        github_run_url = (
+            f"{os.environ['GITHUB_SERVER_URL'].rstrip('/')}/{os.environ['GITHUB_REPOSITORY']}"
+            f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+        )
     return {
         "schema_version": "1.0",
         "metadata": {
@@ -400,7 +421,7 @@ def build_summary(repo: Path, run_dir: Path) -> dict[str, Any]:
             "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "environment": "QA aislado",
             "build_result": overall,
-            "run_url": os.getenv("CI_RUN_URL") or os.getenv("BUILD_URL") or os.getenv("GITHUB_SERVER_URL", "") + "/" + os.getenv("GITHUB_REPOSITORY", "") + "/actions/runs/" + os.getenv("GITHUB_RUN_ID", ""),
+            "run_url": os.getenv("CI_RUN_URL") or os.getenv("BUILD_URL") or github_run_url or None,
             "trigger": os.getenv("CI_EVENT") or os.getenv("GITHUB_EVENT_NAME"),
         },
         "summary": {
