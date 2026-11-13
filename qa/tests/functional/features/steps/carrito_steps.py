@@ -110,12 +110,21 @@ def verify_reloaded_catalog(context):
         api_probe = {}
         try:
             response = requests.get(f"{context.api_url}/productos", timeout=10)
+            payload = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
+            products = payload.get("data", []) if isinstance(payload, dict) else []
             api_probe = {
                 "status": response.status_code,
-                "body": response.text[:500],
+                "product_names": [item.get("nombre") for item in products if isinstance(item, dict)],
+                "qa_product_present": any(
+                    item.get("nombre") == "Miel QA" for item in products if isinstance(item, dict)
+                ),
+                "body": response.text[:500] if response.status_code >= 400 else None,
             }
         except requests.RequestException as exc:
             api_probe = {"error": type(exc).__name__, "detail": str(exc)[:300]}
+        resource_urls = context.browser.execute_script(
+            "return performance.getEntriesByType('resource').map(x => x.name)"
+        )
         api_events = []
         request_urls = {}
         try:
@@ -153,7 +162,7 @@ def verify_reloaded_catalog(context):
         ]
         assert False, (
             f"El catálogo no mostró Miel QA tras recargar; url={context.browser.current_url}; "
-            f"api_probe={api_probe}; error_visible="
+            f"api_probe={api_probe}; resource_urls={resource_urls}; error_visible="
             f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}; "
             f"browser_errors={browser_errors}"
         )
