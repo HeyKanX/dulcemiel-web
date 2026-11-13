@@ -22,23 +22,23 @@ function passwordMatch(control: AbstractControl): ValidationErrors | null {
 
         <form [formGroup]="form" (ngSubmit)="submit()">
           <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input class="form-control" formControlName="nombre" autocomplete="name">
+            <label class="form-label" for="register-name">Nombre</label>
+            <input id="register-name" class="form-control" formControlName="nombre" autocomplete="name">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input class="form-control" type="email" formControlName="email" autocomplete="email">
+            <label class="form-label" for="register-email">Email</label>
+            <input id="register-email" class="form-control" type="email" formControlName="email" autocomplete="email">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Contrasena</label>
-            <input class="form-control" type="password" formControlName="password" autocomplete="new-password">
+            <label class="form-label" for="register-password">Contrasena</label>
+            <input id="register-password" class="form-control" type="password" formControlName="password" autocomplete="new-password">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Confirmar contrasena</label>
-            <input class="form-control" type="password" formControlName="passwordConfirm" autocomplete="new-password">
+            <label class="form-label" for="register-password-confirm">Confirmar contrasena</label>
+            <input id="register-password-confirm" class="form-control" type="password" formControlName="passwordConfirm" autocomplete="new-password">
             <small class="text-danger" *ngIf="form.touched && form.hasError('passwordMismatch')">
               Las contrasenas no coinciden.
             </small>

@@ -8,7 +8,7 @@ import { ProductosService } from '../../../peticiones/productos.service';
 @Component({
   selector: 'app-detalle-producto',
   template: `
-    <a class="btn btn-link px-0 mb-3" routerLink="/productos">Volver a productos</a>
+    <a class="btn btn-link product-back-link px-0 mb-3" routerLink="/productos">Volver a productos</a>
 
     <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
     <div class="alert alert-success" *ngIf="mensaje">{{ mensaje }}</div>
@@ -30,8 +30,8 @@ import { ProductosService } from '../../../peticiones/productos.service';
         <span class="d-block mb-3">Stock disponible: {{ producto.stock }}</span>
 
         <div class="quantity">
-          <label class="form-label">Cantidad</label>
-          <input class="form-control" type="number" min="1" [max]="producto.stock" [(ngModel)]="cantidad">
+          <label class="form-label" for="product-quantity">Cantidad</label>
+          <input id="product-quantity" class="form-control" type="number" min="1" [max]="producto.stock" [(ngModel)]="cantidad">
         </div>
 
         <button class="btn btn-primary btn-lg mt-3" type="button" [disabled]="!isLoggedIn || producto.stock <= 0" (click)="agregar()">

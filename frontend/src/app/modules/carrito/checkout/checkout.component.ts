@@ -19,26 +19,33 @@ import { PedidosService } from '../../../peticiones/pedidos.service';
         <div class="alert alert-success" *ngIf="success">{{ success }}</div>
 
         <form [formGroup]="form" class="delivery-form">
-          <label class="form-label">Persona de contacto</label>
-          <input class="form-control mb-2" formControlName="contacto_nombre" autocomplete="name">
+          <label class="form-label" for="checkout-contact-name">Persona de contacto</label>
+          <input id="checkout-contact-name" class="form-control mb-2" formControlName="contacto_nombre" autocomplete="name" aria-required="true" aria-describedby="checkout-contact-name-help">
+          <span id="checkout-contact-name-help" class="visually-hidden">Campo obligatorio.</span>
 
-          <label class="form-label">Celular o telefono</label>
-          <input class="form-control mb-2" formControlName="contacto_telefono" autocomplete="tel">
+          <label class="form-label" for="checkout-contact-phone">Celular o telefono</label>
+          <input id="checkout-contact-phone" class="form-control mb-2" formControlName="contacto_telefono" autocomplete="tel" aria-required="true" aria-describedby="checkout-contact-phone-help">
+          <span id="checkout-contact-phone-help" class="visually-hidden">Campo obligatorio. Ingresa un teléfono válido.</span>
 
-          <label class="form-label">Email de contacto</label>
-          <input class="form-control mb-2" type="email" formControlName="contacto_email" autocomplete="email">
+          <label class="form-label" for="checkout-contact-email">Email de contacto</label>
+          <input id="checkout-contact-email" class="form-control mb-2" type="email" formControlName="contacto_email" autocomplete="email" aria-describedby="checkout-contact-email-help">
+          <span id="checkout-contact-email-help" class="visually-hidden">Opcional. Si lo ingresas, debe tener formato de correo.</span>
 
-          <label class="form-label">Direccion de entrega</label>
-          <input class="form-control mb-2" formControlName="direccion_entrega" autocomplete="street-address">
+          <label class="form-label" for="checkout-address">Direccion de entrega</label>
+          <input id="checkout-address" class="form-control mb-2" formControlName="direccion_entrega" autocomplete="street-address" aria-required="true" aria-describedby="checkout-address-help">
+          <span id="checkout-address-help" class="visually-hidden">Campo obligatorio.</span>
 
-          <label class="form-label">Distrito o ciudad</label>
-          <input class="form-control mb-2" formControlName="distrito">
+          <label class="form-label" for="checkout-city">Distrito o ciudad</label>
+          <input id="checkout-city" class="form-control mb-2" formControlName="distrito" aria-required="true" aria-describedby="checkout-city-help">
+          <span id="checkout-city-help" class="visually-hidden">Campo obligatorio.</span>
 
-          <label class="form-label">Referencia</label>
-          <textarea class="form-control mb-2" rows="2" formControlName="referencia"></textarea>
+          <label class="form-label" for="checkout-reference">Referencia</label>
+          <textarea id="checkout-reference" class="form-control mb-2" rows="2" formControlName="referencia" aria-describedby="checkout-reference-help"></textarea>
+          <span id="checkout-reference-help" class="visually-hidden">Opcional. Agrega una referencia para la entrega.</span>
 
-          <label class="form-label">Notas para el pedido</label>
-          <textarea class="form-control mb-3" rows="2" formControlName="notas"></textarea>
+          <label class="form-label" for="checkout-notes">Notas para el pedido</label>
+          <textarea id="checkout-notes" class="form-control mb-3" rows="2" formControlName="notas" aria-describedby="checkout-notes-help"></textarea>
+          <span id="checkout-notes-help" class="visually-hidden">Opcional. Agrega indicaciones para el pedido.</span>
         </form>
 
         <ul class="list-group mb-3" *ngIf="items.length > 0">

@@ -50,6 +50,15 @@
   max-width: 180px;
 }
 
+.product-back-link {
+  color: #155b39;
+}
+
+.product-back-link:hover,
+.product-back-link:focus-visible {
+  color: #0b3d26;
+}
+
 @media (max-width: 768px) {
   .detail {
     grid-template-columns: 1fr;

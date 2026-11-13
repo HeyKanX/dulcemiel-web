@@ -1,3 +1,4 @@
+import json
 import sys
 import uuid
 from pathlib import Path
@@ -99,4 +100,26 @@ def verify_reloaded_catalog(context):
         context.catalog.product("Miel QA")
     except TimeoutException:
         text = context.browser.find_element(By.TAG_NAME, "body").text
-        assert False, f"El catálogo no mostró Miel QA tras recargar: {'No se pudieron cargar los productos.' in text=}"
+        api_events = []
+        request_urls = {}
+        try:
+            for entry in context.browser.get_log("performance"):
+                event = json.loads(entry["message"])["message"]
+                params = event.get("params", {})
+                request_id = params.get("requestId")
+                if event.get("method") == "Network.requestWillBeSent":
+                    url = params.get("request", {}).get("url", "")
+                    if "/api/productos" in url:
+                        request_urls[request_id] = url.split("?", 1)[0]
+                        api_events.append({"event": "request", "url": request_urls[request_id]})
+                elif request_id in request_urls and event.get("method") == "Network.responseReceived":
+                    response = params.get("response", {})
+                    api_events.append({"event": "response", "url": request_urls[request_id], "status": response.get("status")})
+                elif request_id in request_urls and event.get("method") == "Network.loadingFailed":
+                    api_events.append({"event": "failed", "url": request_urls[request_id], "reason": params.get("errorText")})
+        except Exception as exc:
+            api_events.append({"event": "diagnostic_error", "reason": type(exc).__name__})
+        assert False, (
+            f"El catálogo no mostró Miel QA tras recargar; error_visible="
+            f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}"
+        )

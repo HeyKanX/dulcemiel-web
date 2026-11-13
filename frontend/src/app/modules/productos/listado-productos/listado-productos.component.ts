@@ -69,8 +69,10 @@ import { SitioService } from '../../../peticiones/sitio.service';
         <h2>Productos de la colmena</h2>
       </div>
       <div class="filters">
-        <input class="form-control" placeholder="Buscar producto" [(ngModel)]="busqueda">
-        <select class="form-select" [(ngModel)]="categoria">
+        <label class="visually-hidden" for="catalog-search">Buscar producto</label>
+        <input id="catalog-search" class="form-control" placeholder="Buscar producto" [(ngModel)]="busqueda">
+        <label class="visually-hidden" for="catalog-category">Filtrar por categoría</label>
+        <select id="catalog-category" class="form-select" [(ngModel)]="categoria">
           <option value="">Todas las categorias</option>
           <option *ngFor="let item of categorias" [value]="item">{{ item }}</option>
         </select>
