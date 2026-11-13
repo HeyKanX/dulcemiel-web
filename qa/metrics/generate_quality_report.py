@@ -688,28 +688,6 @@ def html_report(summary: dict[str, Any]) -> str:
             coverage_cards.append(f"<li><b>{html.escape(data['component'])}:</b> {html.escape(values)}</li>")
         else:
             coverage_cards.append(f"<li><b>{html.escape(component)}:</b> N/A — {html.escape(data.get('reason', 'Reporte no disponible.'))}</li>")
-    coverage_stage_rows = "".join(
-        "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-            html.escape(str(stage.get("stage", ""))),
-            html.escape(str(stage.get("purpose", ""))),
-            html.escape(str(stage.get("gate", ""))),
-            html.escape(
-                (
-                    f"Backend Java: líneas {stage.get('components', {}).get('backend_java', {}).get('line_pct', 'N/A')}%, "
-                    f"ramas {stage.get('components', {}).get('backend_java', {}).get('branch_pct', 'N/A')}%; "
-                    f"frontend: líneas {stage.get('components', {}).get('frontend_typescript', {}).get('line_pct', 'N/A')}%, "
-                    f"ramas {stage.get('components', {}).get('frontend_typescript', {}).get('branch_pct', 'N/A')}%"
-                ) if stage.get("stage") == "baseline" else
-                (
-                    f"Backend Java: líneas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('backend_java', {}).get('lines_pct', 0)) + float(stage.get('components', {}).get('backend_java', {}).get('line_delta_pct_points', 0)):.2f}%, "
-                    f"ramas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('backend_java', {}).get('branches_pct', 0)) + float(stage.get('components', {}).get('backend_java', {}).get('branch_delta_pct_points', 0)):.2f}%; "
-                    f"frontend: líneas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('frontend_angular', {}).get('lines_pct', 0)) + float(stage.get('components', {}).get('frontend_typescript', {}).get('line_delta_pct_points', 0)):.2f}%, "
-                    f"ramas {float(summary.get('coverage_targets', {}).get('measured_baseline', {}).get('frontend_angular', {}).get('branches_pct', 0)) + float(stage.get('components', {}).get('frontend_typescript', {}).get('branch_delta_pct_points', 0)):.2f}% (baseline +5 p.p.)"
-                ) if stage.get("stage") == "next_increment" else
-                "Umbral por componente aprobado desde su baseline"
-            ),
-        ) for stage in summary.get("coverage_targets", {}).get("stages", [])
-    )
     static = summary["static_analysis"]
     priorities = ", ".join(f"P{priority}: {count}" for priority, count in sorted(static.get("findings_by_priority", {}).items())) or "sin hallazgos reportados"
     spotbugs_rules = ", ".join(
@@ -778,8 +756,6 @@ th{{background:#f6f8fa}} .failure{{color:#b42318}} .success{{color:#18794e}} .na
 <p><b>Cómo leer una fila:</b> “Total reportado” incluye los elementos que la herramienta encontró en su reporte; “aprobados”, “fallidos”, “omitidos” y “bloqueados” usan la unidad indicada para esa suite. El denominador de pass/fail es aprobados + fallidos; “Pass rate” = aprobados ÷ ese denominador × 100. Omitidos y bloqueados no se consideran ejecutados y quedan fuera del porcentaje. Newman cuenta aserciones, no solicitudes: el número de solicitudes aparece en la nota de esa suite y no se suma a las aserciones. Las unidades distintas entre suites no se suman. “Estado” resume la suite; un build fallido señala al menos una condición no satisfecha, no que todas las suites hayan fallado.</p>
 <h2>Cobertura</h2><ul>{''.join(coverage_cards)}</ul>
 <p><b>Significado:</b> cada porcentaje divide elementos cubiertos por elementos instrumentados de ese mismo componente y tipo (líneas, ramas, instrucciones o funciones, según reporte). El valor describe cuánto código alcanzaron las pruebas, no si ese código funciona correctamente ni cuántos casos del catálogo se ejecutaron. Backend Java y frontend Angular tienen denominadores distintos, por lo que no se promedian en una cifra general.</p>
-<h3>Metas escalonadas</h3><table><thead><tr><th>Etapa</th><th>Propósito</th><th>Uso en el gate</th><th>Meta por componente</th></tr></thead><tbody>{coverage_stage_rows or '<tr><td colspan="4">No hay etapas de cobertura definidas.</td></tr>'}</tbody></table>
-<p>{html.escape(str(summary.get('coverage_targets', {}).get('interpretation', 'La meta de cobertura debe compararse con el mismo componente y herramienta.')))}</p>
 <p><b>Relación con objetivos:</b> esta cobertura aporta evidencia a OE3 (pruebas unitarias/integración) y OE7 (métricas); no demuestra por sí sola cumplimiento completo de ninguno.</p>
 <h2>K6</h2><table><thead><tr><th>Perfil</th><th>Estado</th><th>VUs máx.</th><th>Duración (s)</th><th>Solicitudes</th><th>Caudal (req/s)</th><th>API p95 (ms)</th><th>API p99 (ms)</th><th>Error de solicitudes</th></tr></thead><tbody>{k6_rows}</tbody></table>
 <p><b>Significado de cada dato K6:</b> el perfil describe el patrón de llegada de usuarios; VUs máx. es el máximo de usuarios virtuales concurrentes observado/configurado; duración es el tiempo total de medición en segundos; solicitudes es el total de peticiones HTTP emitidas por ese perfil; caudal son solicitudes por segundo; API p95 y p99 son percentiles de latencia (el 95% y 99% de observaciones queda en o por debajo de ese tiempo); error de solicitudes = peticiones fallidas ÷ peticiones totales × 100. El estado solo es aprobado si el reporte es válido y todos los umbrales del perfil pasan. El patrón y los umbrales aportan evidencia a OE5; las tasas y latencias observadas alimentan OE7. Estos resultados describen QA aislado y no garantizan el mismo comportamiento en producción.</p>
