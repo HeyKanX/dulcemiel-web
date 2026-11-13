@@ -54,6 +54,7 @@ public class CarritoController {
         Integer productId = integer(body.get("producto_id"));
         Integer quantity = integer(body.get("cantidad"));
         if (productId == null || quantity == null) return responses.error(HttpStatus.BAD_REQUEST, "Producto ID y cantidad son requeridos");
+        if (quantity < 1) return responses.error(HttpStatus.BAD_REQUEST, "La cantidad debe ser mayor que cero");
         var products = jdbc.queryForList("SELECT precio, stock FROM productos WHERE id = ?", productId);
         if (products.isEmpty()) return responses.error(HttpStatus.NOT_FOUND, "Producto no encontrado");
         if (integer(products.get(0).get("stock")) < quantity) return responses.error(HttpStatus.BAD_REQUEST, "Stock insuficiente");
@@ -81,6 +82,7 @@ public class CarritoController {
         Integer cartId = integer(body.get("carrito_id"));
         Integer quantity = integer(body.get("cantidad"));
         if (cartId == null || quantity == null) return responses.error(HttpStatus.BAD_REQUEST, "Carrito ID y cantidad son requeridos");
+        if (quantity < 1) return responses.error(HttpStatus.BAD_REQUEST, "La cantidad debe ser mayor que cero");
         var items = jdbc.queryForList("SELECT producto_id FROM carrito WHERE id = ? AND usuario_id = ?", cartId, user.userId());
         if (items.isEmpty()) return responses.error(HttpStatus.NOT_FOUND, "Item no encontrado en el carrito");
         Number stock = jdbc.queryForObject("SELECT stock FROM productos WHERE id = ?", Number.class, items.get(0).get("producto_id"));
@@ -108,7 +110,12 @@ public class CarritoController {
     }
 
     private static Integer integer(Object value) {
-        return value == null ? null : ((Number) value).intValue();
+        if (!(value instanceof Number number)) return null;
+        try {
+            return new BigDecimal(number.toString()).intValueExact();
+        } catch (ArithmeticException | NumberFormatException ex) {
+            return null;
+        }
     }
 
     private static BigDecimal decimal(Object value) {

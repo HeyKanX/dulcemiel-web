@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "project": "Dulce Miel",
-  "environment": "QA local aislado; http://127.0.0.1:4200; SQL QA container dulce-miel-qa-c5",
-  "detected_commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+  "environment": "QA local efímero phase2-47311c38; frontend 127.0.0.1:54200, API 127.0.0.1:55001 y SQL aislado del proyecto dm-phase2-47311c38",
+  "detected_commit": "885fe83e069724d622733f8d2668fee957d7a486 (base; correcciones locales sin commit)",
   "triage_policy": {
     "confirmed": "Reproducible test failure corroborated by the rendered DOM or current template; not a failure inferred from status alone.",
     "severity": {
@@ -57,14 +57,70 @@
       "first_observed_run": "local-phase1-integration"
     },
     {
-      "defect_id": "DEF-F-004",
+      "defect_id": "DEF-ACC-004",
       "status": "confirmed_open",
+      "severity": "Alta",
+      "title": "Los formularios de registro e inicio de sesión no nombran programáticamente sus campos",
+      "case_ids": [
+        "TC-NF-ACC-002",
+        "TC-NF-ACC-003"
+      ],
+      "detail": "Axe 4.14.0 encontró 4 campos sin nombre accesible en registro y 2 en inicio de sesión (regla label, impacto axe critical). Se confirma inspeccionando controles del flujo de autenticación. La revisión con lector sigue siendo manual para comprobar el anuncio hablado.",
+      "source": "frontend/src/app/modules/auth/register/register.component.ts; frontend/src/app/modules/auth/login/login.component.ts",
+      "evidence_cases": [
+        "TC-NF-ACC-002",
+        "TC-NF-ACC-003"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-ACC-005",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El control de cantidad en detalle de producto no tiene nombre accesible",
+      "case_ids": [
+        "TC-NF-ACC-006"
+      ],
+      "detail": "Axe encontró un input sin etiqueta asociada en /productos/1 (regla label, impacto axe critical). Se clasifica Media según la política del registro porque la acción permanece visualmente identificable, aunque no está nombrada programáticamente.",
+      "source": "frontend/src/app/modules/productos/detalle-producto/detalle-producto.component.ts",
+      "evidence_cases": [
+        "TC-NF-ACC-006"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-ACC-006",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El enlace Volver a productos no alcanza contraste WCAG AA",
+      "case_ids": [
+        "TC-NF-ACC-014"
+      ],
+      "detail": "Axe midió contraste 4.32:1 para .btn-link, por debajo del mínimo 4.5:1 para texto normal (regla color-contrast, impacto axe serious).",
+      "source": "frontend/src/app/modules/productos/detalle-producto/detalle-producto.component.ts; estilos de botón enlace",
+      "evidence_cases": [
+        "TC-NF-ACC-014"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-F-004",
+      "status": "confirmed_fixed_local_pending_pipeline",
       "severity": "Media",
       "title": "El backend acepta cantidad cero al agregar producto al carrito",
       "case_ids": [
         "TC-F-010"
       ],
-      "detail": "La prueba de backend esperaba HTTP 400 y que no se escribiera en carrito; la ejecución devolvió HTTP 201 y falló la aserción. La corrida completa volvió a reproducirlo el 12-11-2026.",
+      "detail": "Build 8 devolvió HTTP 201 y aceptó cantidad 0. Se añadió validación previa a SQL para cantidades <1 y parseo exacto de enteros. Maven 28/28 (incluye 7 pruebas SQL reales) y Newman 32 solicitudes/33 aserciones pasaron después del cambio local. Pendiente de validación remota en Jenkins/GitHub.",
       "source": "backend/src/main/java/com/dulcemiel/backend/controller/CarritoController.java:49-72",
       "evidence_cases": [
         "TC-F-010"
@@ -72,7 +128,51 @@
       "evidence_files": [
         "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.CarritoControllerAuditTest.xml"
       ],
-      "first_observed_run": "local-metrics-2026-11-12"
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "resolution_evidence": [
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.CarritoControllerAuditTest.txt",
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
+        "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
+      ]
+    },
+    {
+      "defect_id": "DEF-F-005",
+      "status": "confirmed_fixed_local_pending_pipeline",
+      "severity": "Media",
+      "title": "Crear producto sin imagen provocaba error SQL 500",
+      "case_ids": [
+        "TC-F-017"
+      ],
+      "detail": "SQL Server rechazaba el NULL no tipado de imagen_data porque JdbcTemplate lo enviaba como NVARCHAR. Se tipó explícitamente el parámetro como VARBINARY. El alta sin imagen se verificó contra SQL Server real y la colección Newman quedó con 0 fallos. Pendiente de validación remota en Jenkins/GitHub.",
+      "source": "backend/src/main/java/com/dulcemiel/backend/controller/ProductosController.java",
+      "evidence_cases": [
+        "TC-F-017"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "resolution_evidence": [
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
+        "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
+      ]
+    },
+    {
+      "defect_id": "DEF-INT-006",
+      "status": "reproducible_pending_root_cause",
+      "severity": "Media",
+      "title": "El catálogo no vuelve a solicitar productos al recargar con sesión activa",
+      "case_ids": [
+        "TC-NF-INT-002"
+      ],
+      "detail": "Reproducido en el stack aislado: tras recargar la vista, no se observa una solicitud del navegador a /api/productos y la página muestra 'No se pudieron cargar los productos'. La consulta directa del mismo endpoint responde 200 y devuelve siete productos. La causa en el arranque/ruta SPA aún no está aislada; no se asigna como defecto confirmado de backend.",
+      "source": "frontend/src/app/modules/productos/listado-productos/listado-productos.component.ts; integración Angular y carga de ruta",
+      "evidence_cases": [
+        "TC-NF-INT-002"
+      ],
+      "evidence_files": [
+        "qa/artifacts/phase2-47311c38/behave-full/carrito_pedidos.Compra y permisos del cliente.xml",
+        "qa/artifacts/phase2-47311c38/behave/phase2-fix_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.txt"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "last_reproduced_run": "phase2-47311c38-2026-11-13"
     }
   ]
 }

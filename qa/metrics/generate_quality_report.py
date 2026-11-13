@@ -92,13 +92,14 @@ def no_report_suite(name: str, tool: str, outcome: str, evidence: str | None = N
 def suite_from_counts(
     name: str, tool: str, total: int, passed: int, failed: int, skipped: int = 0,
     outcome: str = "unknown", evidence: list[str] | None = None, note: str | None = None,
+    blocked: int = 0,
 ) -> dict[str, Any]:
-    status = "failed" if failed else "passed" if total else "no_report"
+    status = "failed" if failed else "blocked" if blocked else "passed" if total else "no_report"
     return {
         "suite": name,
         "tool": tool,
         "status": status,
-        "counts": counts_summary(total, passed, failed, skipped),
+        "counts": counts_summary(total, passed, failed, skipped, blocked),
         "ci_step_outcome": outcome or "unknown",
         "evidence": evidence or [],
         **({"note": note} if note else {}),
@@ -249,12 +250,12 @@ def read_accessibility(run_dir: Path, outcome: str) -> dict[str, Any]:
         return no_report_suite("Accesibilidad automática", "axe-core", outcome, "accessibility-axe/axe-results.json")
     pages = data.get("pages", [])
     total = len(pages)
-    passed = failed = 0
-    errors = []
+    passed = failed = blocked = 0
+    blocked_routes = []
     for page in pages:
         if page.get("error") or not page.get("axe"):
-            failed += 1
-            errors.append(page.get("route", "?"))
+            blocked += 1
+            blocked_routes.append(page.get("route", "?"))
         elif page.get("axe", {}).get("violations"):
             failed += 1
         else:
@@ -262,7 +263,8 @@ def read_accessibility(run_dir: Path, outcome: str) -> dict[str, Any]:
     return suite_from_counts(
         "Accesibilidad automática", "axe-core", total, passed, failed, 0,
         outcome, ["accessibility-axe/axe-results.json"],
-        f"Rutas con error o sin escaneo: {', '.join(errors)}." if errors else None,
+        f"Rutas no escaneadas/bloqueadas: {', '.join(blocked_routes)}." if blocked_routes else None,
+        blocked=blocked,
     )
 
 

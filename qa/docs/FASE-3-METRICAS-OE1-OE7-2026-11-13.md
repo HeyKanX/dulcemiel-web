@@ -71,16 +71,16 @@ Fuente: `CIERRE-FASE-2-DIAGNOSTICO-FALLOS-2026-11-13.md` y `qa/artifacts/phase2-
 |---|---|---|---|
 | OE1 | Parcial | 49/49 casos incluyen referencia de origen; no hay denominador canónico de HU/CA validado aquí. | Importar la lista definitiva de HU y CA y calcular cobertura por IDs. |
 | OE2 | Parcialmente medido | 49 casos únicos; todos tienen las 10 columnas no vacías. | Revisar semántica de datos y pasos, reproducibilidad y positivo/negativo/límite contra cada HU/CA. |
-| OE3 | Medido en local | Maven 28/28; 7 integraciones SQL; TDD incluido. JaCoCo local actualizado: 50,32% líneas y 29,56% ramas. El build #8 anterior fue 20/21 y no debe confundirse con la corrección local. | Integrar los cambios locales y repetir el conjunto completo en CI; generar los artefactos juntos en ese build. |
+| OE3 | Medido en local; CI pendiente | Maven 28/28; 7 integraciones SQL; TDD incluido. JaCoCo local actualizado: 50,32% líneas y 29,56% ramas. El build #8 anterior fue 20/21 y no debe confundirse con la corrección local. Las correcciones se trasladaron al PR #8 para la validación remota. | Confirmar el build del PR y que los reportes se generen juntos en esa corrida. |
 | OE4 | Medido con fallos visibles | Build #8: 29/36 aprobados. En local, Newman 0/33 aserciones fallidas y Behave 3/4. | Diagnosticar `TC-NF-INT-002` y reconciliar resultados con IDs/TestLink de la misma corrida. |
 | OE5 | Parcial | K6 6/6 en build #8; accesibilidad automática 4 rutas con hallazgos, 5 sin análisis; manuales de teclado/Narrador separados. | Acceder a rutas protegidas con sesión QA en el runner y volver a escanear; mantener resultados manuales con evidencia propia. |
-| OE6 | Supera el umbral de clasificación actual | 36/47=76,60%, sobre el 75% solicitado. CI con Jenkins/GitHub Actions y Docker está documentado. | Confirmar artefactos del build más reciente y que publicación TestLink use resultados frescos. Las correcciones de fase 2 aún son locales. |
+| OE6 | Supera el umbral de clasificación actual | 36/47=76,60%, sobre el 75% solicitado. CI con Jenkins/GitHub Actions y Docker está documentado. | Confirmar artefactos del build más reciente y que publicación TestLink use resultados frescos. Las correcciones de fase 2 están en PR y aún esperan validación CI. |
 | OE7 | Métricas calculadas, cierre parcial | Se calculan cobertura, tasa/severidad, pass/fail, flaky y automatización. | Defect leakage sigue N/A; no asignar porcentaje global de OE7 hasta que la rúbrica defina ponderación y criterio de aceptación por submétrica. Actualizar métricas tras el nuevo build integrado. |
 
 ## 5. Interpretación y acciones para culminar la fase 3
 
 1. Mantener el build #8 como línea base integral comparable y la corrida local de fase 2 como evidencia de diagnóstico/corrección separada.
-2. Integrar las correcciones locales de `TC-F-010` y `TC-F-017` y repetir un build completo. El build debe conservar su estado fallido si Behave, accesibilidad u otra prueba reproduce un problema.
+2. Validar en el PR #8 las correcciones de `TC-F-010` y `TC-F-017` con un build completo. El build debe conservar su estado fallido si Behave, accesibilidad u otra prueba reproduce un problema.
 3. Generar JaCoCo y todos los reportes de suites dentro de ese mismo build; publicar un `quality-summary.json`/HTML nuevo, JUnit y los perfiles K6 bajo el ID de ejecución correspondiente.
 4. Reconciliar IDs y resultados del `quality-summary.json` con TestLink después del build; verificar que el número de ejecuciones por ID y los estados coincidan. No volver a publicar datos históricos como si fueran nuevos.
 5. Mantener `TC-NF-INT-002` abierto hasta aislar si el origen es la aplicación, el arranque SPA, el proxy o el fixture. No cambiar el criterio de prueba para convertirlo en aprobado.

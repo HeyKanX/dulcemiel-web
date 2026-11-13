@@ -8,10 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -61,7 +63,7 @@ public class ProductosController {
                 INSERT INTO productos (nombre, descripcion, precio, stock, categoria, imagen_data, imagen_mime, imagen_nombre)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?); SELECT CAST(SCOPE_IDENTITY() AS INT)
                 """, Integer.class, body.get("nombre"), emptyToNull(body.get("descripcion")), body.get("precio"), body.get("stock"), emptyToNull(body.get("categoria")),
-                imageBytes(image), image == null ? null : image.getContentType(), image == null ? null : image.getOriginalFilename());
+                new SqlParameterValue(Types.VARBINARY, imageBytes(image)), image == null ? null : image.getContentType(), image == null ? null : image.getOriginalFilename());
         return responses.created("success", true, "message", "Producto creado exitosamente", "productId", id);
     }
 
