@@ -13,4 +13,7 @@ def create_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1365,900")
-    return webdriver.Chrome(options=options)
+    options.set_capability("goog:loggingPrefs", {"performance": "ALL", "browser": "SEVERE"})
+    driver = webdriver.Chrome(options=options)
+    driver.execute_cdp_cmd("Network.enable", {})
+    return driver

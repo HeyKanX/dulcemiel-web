@@ -54,9 +54,22 @@ class CarritoControllerAuditTest {
     }
 
     @Test void cantidadCeroDebeRechazarseAntesDeEscribir() {
-        when(jdbc.queryForList(startsWith("SELECT precio"), eq(9))).thenReturn(java.util.List.of(Map.of("precio", BigDecimal.TEN, "stock", 5)));
-        when(jdbc.queryForList(startsWith("SELECT id, cantidad"), eq(1), eq(9))).thenReturn(java.util.List.of());
         assertEquals(HttpStatus.BAD_REQUEST, controller.add("Bearer cliente", Map.of("producto_id", 9, "cantidad", 0)).getStatusCode());
-        verify(jdbc, never()).update(startsWith("INSERT INTO carrito"), any(), any(), any(), any());
+        verifyNoInteractions(jdbc);
+    }
+
+    @Test void cantidadNegativaDebeRechazarseAntesDeConsultar() {
+        assertEquals(HttpStatus.BAD_REQUEST, controller.add("Bearer cliente", Map.of("producto_id", 9, "cantidad", -1)).getStatusCode());
+        verifyNoInteractions(jdbc);
+    }
+
+    @Test void cantidadFraccionariaDebeRechazarseSinTruncarse() {
+        assertEquals(HttpStatus.BAD_REQUEST, controller.add("Bearer cliente", Map.of("producto_id", 9, "cantidad", 1.5)).getStatusCode());
+        verifyNoInteractions(jdbc);
+    }
+
+    @Test void actualizarCantidadCeroDebeRechazarseAntesDeConsultar() {
+        assertEquals(HttpStatus.BAD_REQUEST, controller.update("Bearer cliente", Map.of("carrito_id", 13, "cantidad", 0)).getStatusCode());
+        verifyNoInteractions(jdbc);
     }
 }

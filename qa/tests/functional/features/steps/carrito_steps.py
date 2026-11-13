@@ -1,3 +1,4 @@
+import json
 import sys
 import uuid
 from pathlib import Path
@@ -14,7 +15,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from pages.auth_page import AuthPage
 from pages.catalog_page import CatalogPage
 
@@ -87,16 +87,82 @@ def verify_admin_denial(context):
 
 @when("recarga el catálogo con la sesión activa")
 def reload_catalog(context):
+    # Aísla únicamente las solicitudes disparadas por esta recarga.
+    context.browser.get_log("performance")
+    previous_body = context.browser.find_element(By.TAG_NAME, "body")
     context.browser.refresh()
-    WebDriverWait(context.browser, 12).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".catalog-header h2")))
+    WebDriverWait(context.browser, 12).until(EC.staleness_of(previous_body))
+    WebDriverWait(context.browser, 12).until(
+        lambda browser: browser.find_elements(By.CSS_SELECTOR, ".product-card")
+        or browser.find_elements(By.CSS_SELECTOR, ".catalog-header + .alert-danger")
+        or browser.find_elements(By.CSS_SELECTOR, ".empty-state")
+    )
+    context.catalog_reload_events = context.browser.get_log("performance")
 
 
 
 @then("el catálogo continúa mostrando Miel QA")
 def verify_reloaded_catalog(context):
     context.catalog = CatalogPage(context.browser, context.web_url)
-    try:
-        context.catalog.product("Miel QA")
-    except TimeoutException:
+    product_cards = context.browser.find_elements(By.CSS_SELECTOR, ".product-card")
+    if not any("Miel QA" in card.text for card in product_cards):
         text = context.browser.find_element(By.TAG_NAME, "body").text
-        assert False, f"El catálogo no mostró Miel QA tras recargar: {'No se pudieron cargar los productos.' in text=}"
+        api_probe = {}
+        try:
+            response = requests.get(f"{context.api_url}/productos", timeout=10)
+            payload = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
+            products = payload.get("data", []) if isinstance(payload, dict) else []
+            api_probe = {
+                "status": response.status_code,
+                "product_names": [item.get("nombre") for item in products if isinstance(item, dict)],
+                "qa_product_present": any(
+                    item.get("nombre") == "Miel QA" for item in products if isinstance(item, dict)
+                ),
+                "body": response.text[:500] if response.status_code >= 400 else None,
+            }
+        except requests.RequestException as exc:
+            api_probe = {"error": type(exc).__name__, "detail": str(exc)[:300]}
+        resource_urls = context.browser.execute_script(
+            "return performance.getEntriesByType('resource').map(x => x.name)"
+        )
+        api_events = []
+        request_urls = {}
+        try:
+            for entry in context.catalog_reload_events:
+                event = json.loads(entry["message"])["message"]
+                params = event.get("params", {})
+                request_id = params.get("requestId")
+                if event.get("method") == "Network.requestWillBeSent":
+                    url = params.get("request", {}).get("url", "")
+                    if "/api/productos" in url:
+                        request_urls[request_id] = url.split("?", 1)[0]
+                        api_events.append({"event": "request", "url": request_urls[request_id]})
+                elif request_id in request_urls and event.get("method") == "Network.responseReceived":
+                    response = params.get("response", {})
+                    record = {"event": "response", "url": request_urls[request_id], "status": response.get("status")}
+                    try:
+                        body = context.browser.execute_cdp_cmd("Network.getResponseBody", {"requestId": request_id})
+                        payload = json.loads(body.get("body", "{}"))
+                        products = payload.get("data", [])
+                        record["product_count"] = len(products) if isinstance(products, list) else None
+                        record["qa_product_present"] = any(
+                            item.get("nombre") == "Miel QA" for item in products if isinstance(item, dict)
+                        ) if isinstance(products, list) else False
+                    except Exception as exc:
+                        record["body_diagnostic"] = type(exc).__name__
+                    api_events.append(record)
+                elif request_id in request_urls and event.get("method") == "Network.loadingFailed":
+                    api_events.append({"event": "failed", "url": request_urls[request_id], "reason": params.get("errorText")})
+        except Exception as exc:
+            api_events.append({"event": "diagnostic_error", "reason": type(exc).__name__})
+        browser_errors = [
+            {"level": item.get("level"), "message": item.get("message", "")[:240]}
+            for item in context.browser.get_log("browser")
+            if item.get("level") == "SEVERE" and "favicon.ico" not in item.get("message", "")
+        ]
+        assert False, (
+            f"El catálogo no mostró Miel QA tras recargar; url={context.browser.current_url}; "
+            f"api_probe={api_probe}; resource_urls={resource_urls}; error_visible="
+            f"{'No se pudieron cargar los productos.' in text}; api_events={api_events}; "
+            f"browser_errors={browser_errors}"
+        )

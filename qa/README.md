@@ -1,6 +1,6 @@
 # Ejecución de pruebas de Dulce Miel
 
-Las pruebas están separadas del código de la aplicación en `qa/`, salvo las suites unitarias ubicadas en las rutas habituales de Maven y Angular. El diseño y la trazabilidad de los 41 casos se presentan en el anexo del informe del proyecto. Las salidas se guardan en `../../Evidencias/`, organizadas por tipo de prueba y herramienta.
+Las pruebas están separadas del código de la aplicación en `qa/`, salvo las suites unitarias ubicadas en las rutas habituales de Maven y Angular. El registro vigente contiene 49 casos y está en `Informe/Registro_Casos_Prueba_Dulce_Miel_ACTUAL.xlsx` dentro del paquete de entrega; el anexo con 41 casos documenta una versión histórica. Las salidas se guardan en `Informe/Evidencias/`, organizadas por ejecución y herramienta.
 
 ## Preparación
 

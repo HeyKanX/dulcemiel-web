@@ -123,4 +123,28 @@ class ApiSqlServerIntegrationTest {
                 .andExpect(status().isBadRequest());
         assertEquals(5, jdbc.queryForObject("SELECT cantidad FROM carrito WHERE usuario_id=?", Integer.class, id));
     }
+
+    @Test void carritoRechazaCantidadCeroSinPersistirEnSqlServer() throws Exception {
+        int id = user();
+        int product = product(5);
+        String token = "Bearer " + jwt.generateToken(id, "cliente@audit.co", "usuario");
+        mvc.perform(post("/api/carrito/agregar").header("Authorization", token).contentType("application/json")
+                        .content("{\"producto_id\":" + product + ",\"cantidad\":0}"))
+                .andExpect(status().isBadRequest());
+        assertEquals(0, jdbc.queryForObject("SELECT COUNT(*) FROM carrito WHERE usuario_id=?", Integer.class, id));
+    }
+
+    @Test void administradorPuedeCrearProductoSinImagenYQuedaPersistido() throws Exception {
+        jdbc.update("INSERT INTO usuarios(nombre,email,password,rol) VALUES (?,?,?,?)", "Admin", "admin@audit.co", "hash", "admin");
+        int adminId = jdbc.queryForObject("SELECT id FROM usuarios WHERE email=?", Integer.class, "admin@audit.co");
+        String token = "Bearer " + jwt.generateToken(adminId, "admin@audit.co", "admin");
+        var result = mvc.perform(multipart("/api/productos").param("nombre", "Producto sin imagen")
+                        .param("precio", "9.50").param("stock", "2").param("categoria", "QA")
+                        .header("Authorization", token))
+                .andExpect(status().isCreated()).andReturn();
+        int productId = com.fasterxml.jackson.databind.json.JsonMapper.builder().build()
+                .readTree(result.getResponse().getContentAsString()).path("productId").asInt();
+        assertEquals("Producto sin imagen", jdbc.queryForObject("SELECT nombre FROM productos WHERE id=?", String.class, productId));
+        assertEquals(1, jdbc.queryForObject("SELECT CASE WHEN imagen_data IS NULL THEN 1 ELSE 0 END FROM productos WHERE id=?", Integer.class, productId));
+    }
 }

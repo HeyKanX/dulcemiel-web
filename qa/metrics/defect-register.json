@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": "Dulce Miel",
-  "environment": "QA local aislado; http://127.0.0.1:4200; SQL QA container dulce-miel-qa-c5",
-  "detected_commit": "39bbd975c3bd9781d01a8754402373d0e90ee981",
+  "environment": "QA local efímero phase2-47311c38; frontend 127.0.0.1:54200, API 127.0.0.1:55001 y SQL aislado del proyecto dm-phase2-47311c38",
+  "detected_commit": "885fe83e069724d622733f8d2668fee957d7a486 (base; correcciones locales sin commit)",
   "triage_policy": {
     "confirmed": "Reproducible test failure corroborated by the rendered DOM or current template; not a failure inferred from status alone.",
     "severity": {
@@ -24,7 +24,20 @@
       "evidence_cases": [
         "TC-NF-ACC-004"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-001",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-004.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-ACC-002",
@@ -39,7 +52,20 @@
       "evidence_cases": [
         "TC-NF-ACC-008"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-002",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-008.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-ACC-003",
@@ -54,7 +80,103 @@
       "evidence_cases": [
         "TC-NF-ACC-009"
       ],
-      "first_observed_run": "local-phase1-integration"
+      "first_observed_run": "local-phase1-integration",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-003",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "local-phase1-integration",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "evidence_files": [
+        "qa/artifacts/build-16-48a2e976/pending-playwright/TC-NF-ACC-009.png"
+      ],
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
+    },
+    {
+      "defect_id": "DEF-ACC-004",
+      "status": "confirmed_open",
+      "severity": "Alta",
+      "title": "Los formularios de registro e inicio de sesión no nombran programáticamente sus campos",
+      "case_ids": [
+        "TC-NF-ACC-002",
+        "TC-NF-ACC-003"
+      ],
+      "detail": "Axe 4.14.0 encontró 4 campos sin nombre accesible en registro y 2 en inicio de sesión (regla label, impacto axe critical). Se confirma inspeccionando controles del flujo de autenticación. La revisión con lector sigue siendo manual para comprobar el anuncio hablado.",
+      "source": "frontend/src/app/modules/auth/register/register.component.ts; frontend/src/app/modules/auth/login/login.component.ts",
+      "evidence_cases": [
+        "TC-NF-ACC-002",
+        "TC-NF-ACC-003"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-004",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-ACC-005",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El control de cantidad en detalle de producto no tiene nombre accesible",
+      "case_ids": [
+        "TC-NF-ACC-006"
+      ],
+      "detail": "Axe encontró un input sin etiqueta asociada en /productos/1 (regla label, impacto axe critical). Se clasifica Media según la política del registro porque la acción permanece visualmente identificable, aunque no está nombrada programáticamente.",
+      "source": "frontend/src/app/modules/productos/detalle-producto/detalle-producto.component.ts",
+      "evidence_cases": [
+        "TC-NF-ACC-006"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-005",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-ACC-006",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "El enlace Volver a productos no alcanza contraste WCAG AA",
+      "case_ids": [
+        "TC-NF-ACC-014"
+      ],
+      "detail": "Axe midió contraste 4.32:1 para .btn-link, por debajo del mínimo 4.5:1 para texto normal (regla color-contrast, impacto axe serious).",
+      "source": "frontend/src/app/modules/productos/detalle-producto/detalle-producto.component.ts; estilos de botón enlace",
+      "evidence_cases": [
+        "TC-NF-ACC-014"
+      ],
+      "evidence_files": [
+        "qa/artifacts/github-actions-build-8/dulce-miel-quality-8-1/qa/artifacts/build-8-49bb9102/accessibility-axe/axe-results.json",
+        "qa/artifacts/build-16-48a2e976/accessibility-axe/axe-results.json"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "module": "accesibilidad / interfaz",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-ACC-006",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     },
     {
       "defect_id": "DEF-F-004",
@@ -64,7 +186,7 @@
       "case_ids": [
         "TC-F-010"
       ],
-      "detail": "La prueba de backend esperaba HTTP 400 y que no se escribiera en carrito; la ejecución devolvió HTTP 201 y falló la aserción. La corrida completa volvió a reproducirlo el 12-11-2026.",
+      "detail": "La versión base recibió HTTP 201 ante cantidad cero y aceptó la operación (build 8). Una validación local fue añadida después y pasó pruebas locales; se retiró de la rama de evaluación para restablecer el comportamiento base y observar el fallo real, conforme a la instrucción del equipo. La versión evaluada vuelve a considerarse abierta hasta una corrección aprobada por el equipo.",
       "source": "backend/src/main/java/com/dulcemiel/backend/controller/CarritoController.java:49-72",
       "evidence_cases": [
         "TC-F-010"
@@ -72,7 +194,99 @@
       "evidence_files": [
         "backend/target/surefire-reports/TEST-com.dulcemiel.backend.controller.CarritoControllerAuditTest.xml"
       ],
-      "first_observed_run": "local-metrics-2026-11-12"
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "resolution_evidence": [
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.CarritoControllerAuditTest.txt",
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
+        "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
+      ],
+      "module": "carrito / reglas de negocio",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-F-004",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13"
+    },
+    {
+      "defect_id": "DEF-F-005",
+      "status": "confirmed_open",
+      "severity": "Media",
+      "title": "Crear producto sin imagen provocaba error SQL 500",
+      "case_ids": [
+        "TC-F-017"
+      ],
+      "detail": "La evidencia local previa mostró HTTP 500 al crear un producto sin imagen porque SQL Server rechazaba el parámetro NULL no tipado. La corrección local de VARBINARY fue retirada de la rama de evaluación para conservar la versión base con su fallo visible; queda abierta hasta una corrección aprobada por el equipo.",
+      "source": "backend/src/main/java/com/dulcemiel/backend/controller/ProductosController.java",
+      "evidence_cases": [
+        "TC-F-017"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "resolution_evidence": [
+        "backend/target/surefire-reports/com.dulcemiel.backend.controller.ApiSqlServerIntegrationTest.txt",
+        "qa/artifacts/phase2-47311c38/api-fixed/newman.xml"
+      ],
+      "module": "productos / administración",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-F-005",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "evidence_files": []
+    },
+    {
+      "defect_id": "DEF-INT-006",
+      "status": "reproducible_pending_root_cause",
+      "severity": "Media",
+      "title": "El catálogo no vuelve a solicitar productos al recargar con sesión activa",
+      "case_ids": [
+        "TC-NF-INT-002"
+      ],
+      "detail": "En build 15, tras recargar /productos con sesión activa, el navegador mostró “No se pudieron cargar los productos” y no presentó Miel QA. La sonda directa del runner recibió HTTP 200 y encontró Miel QA en /api/productos; la captura de eventos API del navegador quedó vacía. El caso falló; la causa raíz y la ubicación (cliente, integración o mecanismo de captura) siguen por determinar, por lo que no se atribuye un defecto de backend confirmado.",
+      "source": "frontend/src/app/modules/productos/listado-productos/listado-productos.component.ts; integración Angular y carga de ruta",
+      "evidence_cases": [
+        "TC-NF-INT-002"
+      ],
+      "evidence_files": [
+        "qa/artifacts/phase2-47311c38/behave-full/carrito_pedidos.Compra y permisos del cliente.xml",
+        "qa/artifacts/phase2-47311c38/behave/phase2-fix_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.txt",
+        "GitHub Actions run 43408870524: qa/artifacts/build-15-087d8cf9/ui-behave/TESTS-carrito_pedidos.xml",
+        "GitHub Actions run 43408870524: screenshot build-15-087d8cf9_failed_TC-NF-INT-002...png",
+        "qa/artifacts/build-16-48a2e976/ui-behave/TESTS-carrito_pedidos.xml",
+        "qa/artifacts/build-16-48a2e976/build-16-48a2e976_failed_TC-NF-INT-002___CNF-INT-02_-_conservar_cat_logo_al_recargar_sesi_n_activa.png"
+      ],
+      "first_observed_run": "github-actions-build-8-2026-11-13",
+      "last_reproduced_run": "GitHub Actions build 16 / run 43414310448 / commit 2569f4358502fc0725a318b002f50798a823d0c0 / 2026-11-13",
+      "module": "catálogo / integración frontend-backend",
+      "version_detected": "unknown; el registro fuente no identificaba el commit/build exacto",
+      "recorded_on": "2026-11-13",
+      "first_observed_on": null,
+      "date_interpretation": "Fecha en que se estructuró el registro; la fecha de primera observación no estaba normalizada en la evidencia original.",
+      "deduplication_key": "DEF-INT-006",
+      "release_association": "Sin versión liberada y periodo posliberación vinculados; no usar para calcular leakage.",
+      "version_evidence_reference": "github-actions-build-8-2026-11-13",
+      "latest_evidence_interpretation": "El caso asociado volvió a no aprobar en build 16. La captura/XML describe la observación del test; en TC-NF-INT-002 la causa raíz sigue sin confirmarse."
     }
-  ]
+  ],
+  "date_policy": "recorded_on es la fecha del registro estructurado; first_observed_on queda null cuando no consta en la evidencia original. No sustituir una fecha desconocida por la fecha de registro.",
+  "deduplication_policy": "Un registro por defecto raíz confirmado, identificado por defect_id/deduplication_key; varios casos asociados al mismo defecto no incrementan el conteo.",
+  "last_reconciled_run": {
+    "provider": "GitHub Actions",
+    "run_id": "43414310448",
+    "build_number": 16,
+    "commit": "2569f4358502fc0725a318b002f50798a823d0c0",
+    "date": "2026-11-13",
+    "unique_automated_cases": 36,
+    "failed_case_ids": [
+      "TC-NF-ACC-004",
+      "TC-NF-ACC-008",
+      "TC-NF-ACC-009",
+      "TC-NF-ACC-014",
+      "TC-NF-INT-002"
+    ],
+    "interpretation": "Cinco casos fallidos no significan cinco defectos confirmados. Cuatro se vincularon a defectos de accesibilidad ya triados; el caso de integración permanece reproducible y con causa raíz pendiente."
+  }
 }

@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "analyzer": "SpotBugs",
+  "baseline_run_id": "43408870524",
+  "baseline_run_number": 15,
+  "baseline_commit": "c658f57e687c7549992883801b0a3f607ed46a9f",
+  "fingerprint_rule": "SpotBugs type + primary class; source line and SpotBugs instance hash are deliberately excluded to avoid line-shift duplicates.",
+  "findings": [
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.AuthController",
+      "source_path": "com/dulcemiel/backend/controller/AuthController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.CarritoController",
+      "source_path": "com/dulcemiel/backend/controller/CarritoController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.DashboardController",
+      "source_path": "com/dulcemiel/backend/controller/DashboardController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.ImagenesController",
+      "source_path": "com/dulcemiel/backend/controller/ImagenesController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.PedidosController",
+      "source_path": "com/dulcemiel/backend/controller/PedidosController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.ProductosController",
+      "source_path": "com/dulcemiel/backend/controller/ProductosController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.PromocionesController",
+      "source_path": "com/dulcemiel/backend/controller/PromocionesController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "EI_EXPOSE_REP2",
+      "primary_class": "com.dulcemiel.backend.controller.SitioController",
+      "source_path": "com/dulcemiel/backend/controller/SitioController.java",
+      "priority": 2,
+      "cwe": "374"
+    },
+    {
+      "type": "CT_CONSTRUCTOR_THROW",
+      "primary_class": "com.dulcemiel.backend.service.JwtService",
+      "source_path": "com/dulcemiel/backend/service/JwtService.java",
+      "priority": 2,
+      "cwe": null
+    }
+  ],
+  "interpretation": "Priorities describe analyzer ranking, not confirmed product defect severity. Baseline entries are pre-existing findings until triaged; findings absent from baseline are new analyzer observations, not automatically confirmed defects."
+}

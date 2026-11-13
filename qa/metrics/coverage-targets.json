@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "effective_from": "2026-11-13",
+  "policy": "Targets are staged thresholds, not claims of current coverage. Compare against a report from the same component, tool, branch, and build; do not average frontend and backend percentages.",
+  "stages": [
+    {
+      "stage": "baseline",
+      "purpose": "Freeze a comparable CI measurement before enforcing a new threshold.",
+      "gate": "report-only",
+      "components": {
+        "backend_java": {"line_pct": 50.11, "branch_pct": 28.73, "source": "GitHub Actions run 43414310448; JaCoCo; base frozen for review"},
+        "frontend_typescript": {"line_pct": 73.40, "branch_pct": 56.00, "source": "GitHub Actions run 43414310448; Karma/Istanbul; base frozen for review"}
+      }
+    },
+    {
+      "stage": "next_increment",
+      "purpose": "Raise the measured baseline by five percentage points on critical validation code, then review exceptions before gating.",
+      "gate": "report-and-review",
+      "components": {
+        "backend_java": {"line_delta_pct_points": 5, "branch_delta_pct_points": 5, "priority": "stock, cart quantity, order creation, authorization and input validation"},
+        "frontend_typescript": {"line_delta_pct_points": 5, "branch_delta_pct_points": 5, "priority": "registration, login, cart, checkout and error-state handling"}
+      }
+    },
+    {
+      "stage": "enforcement",
+      "purpose": "Make the reviewed component threshold a Quality Gate only after the baseline and scope are stable.",
+      "gate": "enforce-no-regression; ratchet upward by at least five percentage points per agreed release",
+      "components": {
+        "backend_java": {"threshold_source": "approved same-commit CI baseline plus agreed increment"},
+        "frontend_typescript": {"threshold_source": "approved same-commit CI baseline plus agreed increment"}
+      }
+    }
+  ],
+  "measured_baseline": {
+    "run_id": "43414310448",
+    "run_number": 16,
+    "commit": "2569f4358502fc0725a318b002f50798a823d0c0",
+    "environment": "GitHub Actions; QA aislado en Docker",
+    "backend_java": {"lines_pct": 50.11, "branches_pct": 28.73},
+    "frontend_angular": {"lines_pct": 73.40, "branches_pct": 56.00},
+    "interpretation": "La línea es la unidad de código fuente ejecutada por las pruebas; la rama es una alternativa de decisión. Los valores son componente-específicos y usan sus respectivos denominadores JaCoCo/Karma del build 16."
+  },
+  "interpretation": "La baseline numérica se midió en GitHub Actions build 16. Líneas y ramas no se promedian entre backend y frontend. La siguiente meta de revisión es baseline +5 puntos porcentuales por componente para líneas y ramas críticas; esos incrementos son objetivos de revisión, no gates de aprobación actuales."
+}
